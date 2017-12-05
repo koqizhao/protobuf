@@ -77,8 +77,14 @@ src/**/*.log
 src/**/*.trs
 
 # JavaBuild output.
-java/target
-javanano/target
+target
+
+# eclipse project files
+RemoteSystemsTempFiles
+.classpath
+.settings
+.project
+.metadata
 
 # Windows native output.
 cmake/build
@@ -113,3 +119,7 @@ conformance/google/
 conformance/javac_middleman
 conformance/lite/
 conformance/protoc_middleman
+
+# misc
+*.un~
+
