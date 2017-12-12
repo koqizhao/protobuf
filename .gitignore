@@ -78,6 +78,8 @@ src/**/*.trs
 
 # JavaBuild output.
 target
+*.versionsBackup
+
 
 # eclipse project files
 RemoteSystemsTempFiles
