@@ -145,14 +145,14 @@ public class MapField<K, V> implements MutabilityOracle {
 
   /** Returns an immutable empty MapField. */
   public static <K, V> MapField<K, V> emptyMapField(
-      MapEntry<K, V> defaultEntry) {
+      MapEntry defaultEntry) {
     return new MapField<K, V>(
         defaultEntry, StorageMode.MAP, Collections.<K, V>emptyMap());
   }
 
 
   /** Creates a new mutable empty MapField. */
-  public static <K, V> MapField<K, V> newMapField(MapEntry<K, V> defaultEntry) {
+  public static <K, V> MapField<K, V> newMapField(MapEntry defaultEntry) {
     return new MapField<K, V>(
         defaultEntry, StorageMode.MAP, new LinkedHashMap<K, V>());
   }
