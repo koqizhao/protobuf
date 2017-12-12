@@ -35,8 +35,12 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -48,6 +52,7 @@ import java.util.TreeMap;
  *
  * Protobuf internal. Users shouldn't use this class.
  */
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public final class MapEntry<K, V> extends AbstractMessage {
 
   private static final class Metadata<K, V> extends MapEntryLite.Metadata<K, V> {
@@ -59,8 +64,9 @@ public final class MapEntry<K, V> extends AbstractMessage {
         Descriptor descriptor,
         MapEntry<K, V> defaultInstance,
         WireFormat.FieldType keyType,
-        WireFormat.FieldType valueType) {
-      super(keyType, defaultInstance.key, valueType, defaultInstance.value);
+        WireFormat.FieldType valueType,
+        boolean isNested) {
+      super(keyType, defaultInstance.key, valueType, defaultInstance.value, isNested);
       this.descriptor = descriptor;
       this.parser = new AbstractParser<MapEntry<K, V>>() {
 
@@ -76,22 +82,44 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
   private final K key;
   private final V value;
+  private final List<V> values;
   private final Metadata<K, V> metadata;
+  
+  
 
   /** Create a default MapEntry instance. */
   private MapEntry(
       Descriptor descriptor,
       WireFormat.FieldType keyType, K defaultKey,
       WireFormat.FieldType valueType, V defaultValue) {
+      this(descriptor, keyType, defaultKey, valueType, defaultValue, false);
+  }
+
+  private MapEntry(
+      Descriptor descriptor,
+      WireFormat.FieldType keyType, K defaultKey,
+      WireFormat.FieldType valueType, V defaultValue,
+      boolean isNested) {
     this.key = defaultKey;
     this.value = defaultValue;
-    this.metadata = new Metadata<K, V>(descriptor, this, keyType, valueType);
+    this.values = null;
+    this.metadata = new Metadata<K, V>(descriptor, this, keyType, valueType, isNested);
   }
 
   /** Create a MapEntry with the provided key and value. */
   private MapEntry(Metadata metadata, K key, V value) {
+    this(metadata, key, value, null);
+  }
+  
+  /** Create a MapEntry with the provided key and values. */
+  private MapEntry(Metadata metadata, K key, List<V> values) {
+    this(metadata, key, null, values);
+  }
+
+  private MapEntry(Metadata metadata, K key, V value, List<V> values) {
     this.key = key;
     this.value = value;
+    this.values = values;
     this.metadata = metadata;
   }
 
@@ -103,9 +131,17 @@ public final class MapEntry<K, V> extends AbstractMessage {
       throws InvalidProtocolBufferException {
     try {
       this.metadata = metadata;
-      Map.Entry<K, V> entry = MapEntryLite.parseEntry(input, metadata, extensionRegistry);
-      this.key = entry.getKey();
-      this.value = entry.getValue();
+      if (metadata.isNested) {
+        Map.Entry<K, List<V>> entry = MapEntryLite.parseEntryForNested(input, metadata, extensionRegistry);
+        this.key = entry.getKey();
+        this.value = null;
+        this.values = entry.getValue();
+      } else {
+        Map.Entry<K, V> entry = MapEntryLite.parseEntry(input, metadata, extensionRegistry);
+        this.key = entry.getKey();
+        this.value = entry.getValue();
+        this.values = null;
+      }
     } catch (InvalidProtocolBufferException e) {
       throw e.setUnfinishedMessage(this);
     } catch (IOException e) {
@@ -123,8 +159,20 @@ public final class MapEntry<K, V> extends AbstractMessage {
       Descriptor descriptor,
       WireFormat.FieldType keyType, K defaultKey,
       WireFormat.FieldType valueType, V defaultValue) {
+      return newDefaultInstance(descriptor, keyType, defaultKey, valueType, defaultValue, false);
+  }
+
+  public static <K, V> MapEntry<K, V> newDefaultInstance(
+      Descriptor descriptor,
+      WireFormat.FieldType keyType, K defaultKey,
+      WireFormat.FieldType valueType, V defaultValue,
+      boolean isNested) {
     return new MapEntry<K, V>(
-        descriptor, keyType, defaultKey, valueType, defaultValue);
+        descriptor, keyType, defaultKey, valueType, defaultValue, isNested);
+  }
+  
+  public boolean isNested() {
+    return metadata.isNested;
   }
 
   public K getKey() {
@@ -135,6 +183,23 @@ public final class MapEntry<K, V> extends AbstractMessage {
     return value;
   }
 
+  public List<V> getValues() {
+    return values;
+  }
+  
+  public Map getValueMap() {
+    if (!isNested()) {
+      throw new RuntimeException("Not a nested map entry.");
+    }
+
+    Map map = new HashMap();
+    for (MapEntry entry : (List<MapEntry>) getValues()) {
+      map.put(entry.getKey(), entry.isNested() ? entry.getValueMap() : entry.getValue());
+    }
+    
+    return map;
+  }
+
   private volatile int cachedSerializedSize = -1;
 
   @Override
@@ -143,14 +208,23 @@ public final class MapEntry<K, V> extends AbstractMessage {
       return cachedSerializedSize;
     }
 
-    int size = MapEntryLite.computeSerializedSize(metadata, key, value);
-    cachedSerializedSize = size;
-    return size;
+    if (isNested()) {
+      int size = MapEntryLite.computeSerializedSize(metadata, key, values);
+      cachedSerializedSize = size;
+      return size;
+    } else {
+      int size = MapEntryLite.computeSerializedSize(metadata, key, value);
+      cachedSerializedSize = size;
+      return size;
+    }
   }
 
   @Override
   public void writeTo(CodedOutputStream output) throws IOException {
-    MapEntryLite.writeTo(output, metadata, key, value);
+    if (isNested())
+      MapEntryLite.writeTo(output, metadata, key, values);
+    else
+      MapEntryLite.writeTo(output, metadata, key, value);
   }
 
   @Override
@@ -170,7 +244,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
   @Override
   public Builder<K, V> toBuilder() {
-    return new Builder<K, V>(metadata, key, value);
+    return new Builder<K, V>(metadata, key, value, values);
   }
 
   @Override
@@ -212,7 +286,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
   @Override
   public Object getField(FieldDescriptor field) {
     checkFieldDescriptor(field);
-    Object result = field.getNumber() == 1 ? getKey() : getValue();
+    Object result = field.getNumber() == 1 ? getKey() : (isNested() ? getValues() : getValue());
     // Convert enums to EnumValueDescriptor.
     if (field.getType() == FieldDescriptor.Type.ENUM) {
       result = field.getEnumType().findValueByNumberCreatingIfUnknown(
@@ -223,14 +297,32 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
   @Override
   public int getRepeatedFieldCount(FieldDescriptor field) {
-    throw new RuntimeException(
-        "There is no repeated field in a map entry message.");
+    List<?> value = getNestedValue(field);
+    return value == null ? 0 : value.size();
   }
 
   @Override
   public Object getRepeatedField(FieldDescriptor field, int index) {
-    throw new RuntimeException(
-        "There is no repeated field in a map entry message.");
+    List<?> value = getNestedValue(field);
+    if (value == null) {
+      throw new IndexOutOfBoundsException();
+    } else {
+      return value.get(index);
+    }
+  }
+  
+  private List<?> getNestedValue(FieldDescriptor field) {
+     if (!isNested()) {
+      throw new RuntimeException(
+          "There is no repeated field in a map entry message.");
+    }
+
+    if (field.getNumber() != 2) {
+      throw new RuntimeException(
+          "There is no repeated key field in a map entry message.");
+    }
+
+    return (List<?>) getField(field);
   }
 
   @Override
@@ -246,15 +338,25 @@ public final class MapEntry<K, V> extends AbstractMessage {
     private final Metadata<K, V> metadata;
     private K key;
     private V value;
+    private List<V> values;
 
     private Builder(Metadata<K, V> metadata) {
       this(metadata, metadata.defaultKey, metadata.defaultValue);
     }
 
     private Builder(Metadata<K, V> metadata, K key, V value) {
+      this(metadata, key, value, null);
+    }
+
+    private Builder(Metadata<K, V> metadata, K key, V value, List<V> values) {
       this.metadata = metadata;
       this.key = key;
       this.value = value;
+      this.values = values;
+    }
+    
+    public boolean isNested() {
+      return metadata.isNested;
     }
 
     public K getKey() {
@@ -263,6 +365,10 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
     public V getValue() {
       return value;
+    }
+
+    public List<V> getValues() {
+      return values;
     }
 
     public Builder<K, V> setKey(K key) {
@@ -285,6 +391,54 @@ public final class MapEntry<K, V> extends AbstractMessage {
       return this;
     }
 
+    public Builder<K, V> setValues(List<V> values) {
+      this.values = values;
+      return this;
+    }
+
+    public Builder<K, V> clearValues() {
+      this.values = null;
+      return this;
+    }
+    
+    public Map getValueMap() {
+      if (!isNested()) {
+        throw new RuntimeException("Not a nested map entry.");
+      }
+
+      Map map = new HashMap();
+      for (MapEntry entry : (List<MapEntry>) getValues()) {
+        map.put(entry.getKey(), entry.isNested() ? entry.getValueMap() : entry.getValue());
+      }
+      
+      return map;
+    }
+    
+    public Builder<K, V> setValueMap(Map valueMap) {
+      if (!isNested()) {
+        throw new RuntimeException("Not a nested map entry.");
+      }
+      
+      if (valueMap == null || valueMap.isEmpty())
+        setValues(null);
+      else {
+        MapEntry defaultValueEntry = (MapEntry) metadata.defaultValue;
+        List<MapEntry> values = new ArrayList<MapEntry>();
+        for (Map.Entry e : (Set<Map.Entry>) valueMap.entrySet()) {
+          MapEntry.Builder builder = defaultValueEntry.newBuilderForType();
+          builder.setKey(e.getKey());
+          if (builder.isNested())
+            builder.setValueMap((Map) e.getValue());
+          else
+            builder.setValue(e.getValue());
+          values.add(builder.build());
+        }
+        setValues((List<V>)values);
+      }
+      
+      return this;
+    }
+
     @Override
     public MapEntry<K, V> build() {
       MapEntry<K, V> result = buildPartial();
@@ -296,7 +450,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
     @Override
     public MapEntry<K, V> buildPartial() {
-      return new MapEntry<K, V>(metadata, key, value);
+      return new MapEntry<K, V>(metadata, key, value, values);
     }
 
     @Override
@@ -325,7 +479,6 @@ public final class MapEntry<K, V> extends AbstractMessage {
       return ((Message) value).newBuilderForType();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Builder<K, V> setField(FieldDescriptor field, Object value) {
       checkFieldDescriptor(field);
@@ -335,7 +488,11 @@ public final class MapEntry<K, V> extends AbstractMessage {
         if (field.getType() == FieldDescriptor.Type.ENUM) {
           value = ((EnumValueDescriptor) value).getNumber();
         }
-        setValue((V) value);
+        
+        if (isNested())
+          setValues((List<V>) value);
+        else
+          setValue((V) value);
       }
       return this;
     }
@@ -346,7 +503,10 @@ public final class MapEntry<K, V> extends AbstractMessage {
       if (field.getNumber() == 1) {
         clearKey();
       } else {
-        clearValue();
+        if (isNested())
+          clearValues();
+        else
+          clearValue();
       }
       return this;
     }
@@ -354,14 +514,31 @@ public final class MapEntry<K, V> extends AbstractMessage {
     @Override
     public Builder<K, V> setRepeatedField(FieldDescriptor field, int index,
         Object value) {
-      throw new RuntimeException(
-          "There is no repeated field in a map entry message.");
+      if (!isNested()) {
+        throw new RuntimeException(
+            "There is no repeated field in a map entry message.");
+      }
+      
+      List<V> values = getValues();
+      values.set(index, (V)value);
+      return this;
     }
 
     @Override
     public Builder<K, V> addRepeatedField(FieldDescriptor field, Object value) {
-      throw new RuntimeException(
-          "There is no repeated field in a map entry message.");
+      if (!metadata.isNested) {
+        throw new RuntimeException(
+            "There is no repeated field in a map entry message.");
+      }
+      
+      List<V> values = getValues();
+      if (values == null) {
+        values = new ArrayList<V>();
+        setValues(values);
+      }
+
+      values.add((V)value);
+      return this;
     }
 
     @Override
@@ -400,7 +577,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
     @Override
     public Object getField(FieldDescriptor field) {
       checkFieldDescriptor(field);
-      Object result = field.getNumber() == 1 ? getKey() : getValue();
+      Object result = field.getNumber() == 1 ? getKey() : (metadata.isNested ? getValues() : getValue());
       // Convert enums to EnumValueDescriptor.
       if (field.getType() == FieldDescriptor.Type.ENUM) {
         result = field.getEnumType().findValueByNumberCreatingIfUnknown((Integer) result);
@@ -410,14 +587,32 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
     @Override
     public int getRepeatedFieldCount(FieldDescriptor field) {
-      throw new RuntimeException(
-          "There is no repeated field in a map entry message.");
+      List<?> value = getNestedValue(field);
+      return value == null ? 0 : value.size();
     }
 
     @Override
     public Object getRepeatedField(FieldDescriptor field, int index) {
-      throw new RuntimeException(
-          "There is no repeated field in a map entry message.");
+      List<?> value = getNestedValue(field);
+      if (value == null) {
+        throw new IndexOutOfBoundsException();
+      } else {
+        return value.get(index);
+      }
+    }
+  
+    private List<?> getNestedValue(FieldDescriptor field) {
+      if (!isNested()) {
+        throw new RuntimeException(
+            "There is no repeated field in a map entry message.");
+      }
+
+      if (field.getNumber() != 2) {
+        throw new RuntimeException(
+            "There is no repeated key field in a map entry message.");
+      }
+
+      return (List<?>) getField(field);
     }
 
     @Override
@@ -427,7 +622,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
     @Override
     public Builder<K, V> clone() {
-      return new Builder(metadata, key, value);
+      return new Builder<K, V>(metadata, key, value, values);
     }
   }
 

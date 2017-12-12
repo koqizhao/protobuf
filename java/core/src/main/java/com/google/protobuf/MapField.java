@@ -39,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.protobuf.MapEntry.Builder;
+
 /**
  * Internal representation of map fields in generated messages.
  *
@@ -54,6 +56,7 @@ import java.util.Set;
  * and getList() concurrently in multiple threads. If write-access is needed,
  * all access must be synchronized.
  */
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class MapField<K, V> implements MutabilityOracle {
   /**
    * Indicates where the data of this map field is currently stored.
@@ -89,20 +92,27 @@ public class MapField<K, V> implements MutabilityOracle {
   }
 
   private static class ImmutableMessageConverter<K, V> implements Converter<K, V> {
-    private final MapEntry<K, V> defaultEntry;
-    public ImmutableMessageConverter(MapEntry<K, V> defaultEntry) {
+    private final MapEntry<K, Object> defaultEntry;
+
+    public ImmutableMessageConverter(MapEntry defaultEntry) {
       this.defaultEntry = defaultEntry;
     }
 
     @Override
     public Message convertKeyAndValueToMessage(K key, V value) {
-      return defaultEntry.newBuilderForType().setKey(key).setValue(value).buildPartial();
+      Builder<K, Object> builder = defaultEntry.newBuilderForType().setKey(key);
+      if (builder.isNested())
+        builder.setValueMap((Map) value);
+      else
+        builder.setValue(value);
+      return builder.buildPartial();
     }
 
     @Override
     public void convertMessageToKeyAndValue(Message message, Map<K, V> map) {
-      MapEntry<K, V> entry = (MapEntry<K, V>) message;
-      map.put(entry.getKey(), entry.getValue());
+      MapEntry<K, Object> entry = (MapEntry) message;
+      Object value = entry.isNested() ? entry.getValueMap() : entry.getValue();
+      map.put((K) entry.getKey(), (V)value);
     }
 
     @Override
@@ -126,7 +136,7 @@ public class MapField<K, V> implements MutabilityOracle {
   }
 
   private MapField(
-      MapEntry<K, V> defaultEntry,
+      MapEntry defaultEntry,
       StorageMode mode,
       Map<K, V> mapData) {
     this(new ImmutableMessageConverter<K, V>(defaultEntry), mode, mapData);
@@ -152,7 +162,6 @@ public class MapField<K, V> implements MutabilityOracle {
     return converter.convertKeyAndValueToMessage(key, value);
   }
 
-  @SuppressWarnings("unchecked")
   private void convertMessageToKeyAndValue(Message message, Map<K, V> map) {
     converter.convertMessageToKeyAndValue(message, map);
   }
@@ -209,7 +218,6 @@ public class MapField<K, V> implements MutabilityOracle {
     mode = StorageMode.MAP;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public boolean equals(Object object) {
     if (!(object instanceof MapField)) {
