@@ -47,6 +47,7 @@ import com.google.protobuf.WireFormat.FieldType;
  *
  * Protobuf internal. Users shouldn't use.
  */
+@SuppressWarnings({ "unchecked" })
 public class MapEntryLite<K, V> {
 
   static class Metadata<K, V> {
@@ -183,25 +184,6 @@ public class MapEntryLite<K, V> {
     return serializedSize;
   }
 
-  static <T> T parseKeyField(
-      CodedInputStream input, ExtensionRegistryLite extensionRegistry,
-      Metadata<?, ?> metadata, T value) throws IOException {
-    return parseField(input, extensionRegistry, metadata.keyType, value);
-  }
-  
-  static <T> T parseValueField(
-      CodedInputStream input, ExtensionRegistryLite extensionRegistry,
-      Metadata<?, ?> metadata, T value) throws IOException {
-    if (!metadata.isNested)
-      return parseField(input, extensionRegistry, metadata.valueType, value);
-    
-    List valueList = value == null ? new ArrayList<Object>() : (List<Object>) value;
-    Object e = parseField(input, extensionRegistry, metadata.valueType, value);
-    valueList.add(e);
-    return (T)valueList;
-  }
-
-  @SuppressWarnings("unchecked")
   static <T> T parseField(
       CodedInputStream input, ExtensionRegistryLite extensionRegistry,
       FieldType type, T value) throws IOException {
@@ -275,9 +257,9 @@ public class MapEntryLite<K, V> {
         break;
       }
       if (tag == WireFormat.makeTag(KEY_FIELD_NUMBER, metadata.keyType.getWireType())) {
-        key = parseField(input, extensionRegistry, metadata.keyType, key);
+        key = parseField(input, extensionRegistry, metadata.keyType, metadata.defaultKey);
       } else if (tag == WireFormat.makeTag(VALUE_FIELD_NUMBER, metadata.valueType.getWireType())) {
-        value = parseField(input, extensionRegistry, metadata.valueType, value);
+        value = parseField(input, extensionRegistry, metadata.valueType, metadata.defaultValue);
       } else {
         if (!input.skipField(tag)) {
           break;
@@ -303,7 +285,7 @@ public class MapEntryLite<K, V> {
         break;
       }
       if (tag == WireFormat.makeTag(KEY_FIELD_NUMBER, metadata.keyType.getWireType())) {
-        key = parseField(input, extensionRegistry, metadata.keyType, key);
+        key = parseField(input, extensionRegistry, metadata.keyType, metadata.defaultKey);
       } else if (tag == WireFormat.makeTag(VALUE_FIELD_NUMBER, metadata.valueType.getWireType())) {
         V value = parseField(input, extensionRegistry, metadata.valueType, metadata.defaultValue);
         if (values == null)
@@ -336,9 +318,9 @@ public class MapEntryLite<K, V> {
         break;
       }
       if (tag == WireFormat.makeTag(KEY_FIELD_NUMBER, metadata.keyType.getWireType())) {
-        key = parseKeyField(input, extensionRegistry, metadata, key);
+        key = parseField(input, extensionRegistry, metadata.keyType, metadata.defaultKey);
       } else if (tag == WireFormat.makeTag(VALUE_FIELD_NUMBER, metadata.valueType.getWireType())) {
-        value = parseValueField(input, extensionRegistry, metadata, value);
+        value = parseField(input, extensionRegistry, metadata.valueType, metadata.defaultValue);
       } else {
         if (!input.skipField(tag)) {
           break;
@@ -365,7 +347,7 @@ public class MapEntryLite<K, V> {
         break;
       }
       if (tag == WireFormat.makeTag(KEY_FIELD_NUMBER, metadata.keyType.getWireType())) {
-        key = parseField(input, extensionRegistry, metadata.keyType, key);
+        key = parseField(input, extensionRegistry, metadata.keyType, metadata.defaultKey);
       } else if (tag == WireFormat.makeTag(VALUE_FIELD_NUMBER, metadata.valueType.getWireType())) {
         V value = parseField(input, extensionRegistry, metadata.valueType, metadata.defaultValue);
         if (values == null)
@@ -377,7 +359,6 @@ public class MapEntryLite<K, V> {
         }
       }
     }
-
     input.checkLastTagWas(0);
     input.popLimit(oldLimit);
     map.put(key, values);

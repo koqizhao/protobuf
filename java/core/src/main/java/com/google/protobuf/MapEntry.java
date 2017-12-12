@@ -33,6 +33,8 @@ package com.google.protobuf;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.FileDescriptor;
+import com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -59,7 +61,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
     public final Descriptor descriptor;
     public final Parser<MapEntry<K, V>> parser;
-
+    
     public Metadata(
         Descriptor descriptor,
         MapEntry<K, V> defaultInstance,
@@ -155,6 +157,12 @@ public final class MapEntry<K, V> extends AbstractMessage {
    * store the created default instance and use it later to create new MapEntry
    * messages of the same type.
    */
+  public static <K, V> MapEntry<K, V> newDefaultInstance(
+      WireFormat.FieldType keyType, K defaultKey,
+      WireFormat.FieldType valueType, V defaultValue) {
+      return newDefaultInstance(LeafMapDescriptor.DESCRIPTOR, keyType, defaultKey, valueType, defaultValue, false);
+  }
+
   public static <K, V> MapEntry<K, V> newDefaultInstance(
       Descriptor descriptor,
       WireFormat.FieldType keyType, K defaultKey,
@@ -632,4 +640,29 @@ public final class MapEntry<K, V> extends AbstractMessage {
     }
     return true;
   }
+
+  private static class LeafMapDescriptor {
+
+    public static final Descriptor DESCRIPTOR;
+    private static FileDescriptor fileDescriptor;
+
+    static {
+      java.lang.String[] descriptorData = {
+          "\n\rLeafMap.proto\"%\n\007LeafMap\022\013\n\003key\030\001 \002(\t\022" +
+          "\r\n\005value\030\002 \002(\t"
+      };
+      InternalDescriptorAssigner assigner =
+          new InternalDescriptorAssigner() {
+            public ExtensionRegistry assignDescriptors(
+                FileDescriptor root) {
+              fileDescriptor = root;
+              return null;
+            }
+          };
+      FileDescriptor.internalBuildGeneratedFileFrom(descriptorData, new FileDescriptor[] { }, assigner);
+      DESCRIPTOR = fileDescriptor.getMessageTypes().get(0);
+    }
+
+  }
+
 }

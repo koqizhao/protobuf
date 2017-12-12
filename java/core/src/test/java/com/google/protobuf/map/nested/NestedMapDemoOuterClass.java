@@ -344,8 +344,8 @@ public final class NestedMapDemoOuterClass {
                   com.google.protobuf.WireFormat.FieldType.INT32,
                   0,
                   com.google.protobuf.WireFormat.FieldType.MESSAGE,
-                  MapEntry.newDefaultInstance(NestedMapDemoOuterClass.internal_static_NestedMapDemo_MetadataEntry_descriptor,
-                      FieldType.STRING, "", FieldType.STRING, "", true));
+                  MapEntry.newDefaultInstance(FieldType.STRING, "", FieldType.STRING, ""),
+                  true);
     }
     private com.google.protobuf.MapField<
         java.lang.Integer, Map<java.lang.String, String>> metadata_;

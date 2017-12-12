@@ -3,10 +3,13 @@ package com.google.protobuf.map.nested;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Test;
 
 import com.google.protobuf.map.nested.DemoOuterClass.Demo;
+import com.google.protobuf.map.nested.NestedMapDemoOuterClass.NestedMapDemo;
 
 /**
  * @author koqizhao
@@ -23,13 +26,43 @@ public class NestedMapFieldTest {
     try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
       demo.writeTo(os);
       bytes = os.toByteArray();
-      System.out.println(bytes.length);
+      System.out.println("bytes length: " + bytes.length);
     };
+    
+    System.out.println();
 
     try (ByteArrayInputStream is = new ByteArrayInputStream(bytes)) {
       Demo demo2 = Demo.parseFrom(is);
       System.out.println(demo2);
     }
   }
+  
+  @Test
+  public void NestedMapDemoObjTest() throws IOException {
+    Map<String, String> mapValue = new HashMap<>();
+    mapValue.put("ok1", "ok1_value");
+    mapValue.put("ok2", "ok2_value");
+    NestedMapDemo demo = NestedMapDemo.newBuilder().setTitle("ok").setUrl("http://test").addSnippets("ok").putMetadata(1, mapValue).build();
+
+    System.out.println(demo.getMetadataMap());
+    System.out.println();
+
+    byte[] bytes = null;
+    try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+      demo.writeTo(os);
+      bytes = os.toByteArray();
+
+      System.out.println("bytes length: " + bytes.length);
+    };
+
+    System.out.println();
+
+    try (ByteArrayInputStream is = new ByteArrayInputStream(bytes)) {
+      NestedMapDemo demo2 = NestedMapDemo.parseFrom(is);
+
+      System.out.println(demo2.getMetadataMap());
+    }
+  }
+
 
 }
