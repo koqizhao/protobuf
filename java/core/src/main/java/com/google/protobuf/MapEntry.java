@@ -71,12 +71,10 @@ public final class MapEntry<K, V> extends AbstractMessage {
         Descriptor descriptor,
         MapEntry<K, V> defaultInstance,
         WireFormat.FieldType keyType,
-        WireFormat.FieldType valueType,
-        boolean isNested) {
-      super(keyType, defaultInstance.key, valueType, defaultInstance.value, isNested);
+        WireFormat.FieldType valueType) {
+      super(keyType, defaultInstance.key, valueType, defaultInstance.value);
       this.descriptor = descriptor;
       this.parser = new AbstractParser<MapEntry<K, V>>() {
-
         @Override
         public MapEntry<K, V> parsePartialFrom(
             CodedInputStream input, ExtensionRegistryLite extensionRegistry)
@@ -85,32 +83,27 @@ public final class MapEntry<K, V> extends AbstractMessage {
         }
       };
     }
+
+    @Override
+    protected boolean determineIsNested() {
+      return defaultValue != null && defaultValue instanceof MapEntry;
+    }
   }
 
   private final K key;
   private final V value;
   private final List<V> values;
   private final Metadata<K, V> metadata;
-  
-  
 
   /** Create a default MapEntry instance. */
   private MapEntry(
       Descriptor descriptor,
       WireFormat.FieldType keyType, K defaultKey,
       WireFormat.FieldType valueType, V defaultValue) {
-      this(descriptor, keyType, defaultKey, valueType, defaultValue, false);
-  }
-
-  private MapEntry(
-      Descriptor descriptor,
-      WireFormat.FieldType keyType, K defaultKey,
-      WireFormat.FieldType valueType, V defaultValue,
-      boolean isNested) {
     this.key = defaultKey;
     this.value = defaultValue;
     this.values = null;
-    this.metadata = new Metadata<K, V>(descriptor, this, keyType, valueType, isNested);
+    this.metadata = new Metadata<K, V>(descriptor, this, keyType, valueType);
   }
 
   /** Create a MapEntry with the provided key and value. */
@@ -177,8 +170,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
       Descriptor descriptor,
       WireFormat.FieldType keyType, K defaultKey,
       WireFormat.FieldType valueType, V defaultValue) {
-    boolean isNested = defaultValue != null && defaultValue instanceof MapEntry;
-    return new MapEntry<K, V>(descriptor, keyType, defaultKey, valueType, defaultValue, isNested);
+    return new MapEntry<K, V>(descriptor, keyType, defaultKey, valueType, defaultValue);
   }
   
   public boolean isNested() {

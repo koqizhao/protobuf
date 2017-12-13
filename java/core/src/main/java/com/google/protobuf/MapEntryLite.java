@@ -60,19 +60,17 @@ public class MapEntryLite<K, V> {
     public Metadata(
         WireFormat.FieldType keyType, K defaultKey,
         WireFormat.FieldType valueType, V defaultValue) {
-        this(keyType, defaultKey, valueType, defaultValue, false);
-    }
-
-    public Metadata(
-        WireFormat.FieldType keyType, K defaultKey,
-        WireFormat.FieldType valueType, V defaultValue,
-        boolean isNested) {
       this.keyType = keyType;
       this.defaultKey = defaultKey;
       this.valueType = valueType;
       this.defaultValue = defaultValue;
-      this.isNested = isNested;
+      isNested = determineIsNested();
     }
+    
+    protected boolean determineIsNested() {
+      return defaultValue != null && defaultValue instanceof MapEntryLite;
+    }
+
   }
 
   private static final int KEY_FIELD_NUMBER = 1;
@@ -87,17 +85,10 @@ public class MapEntryLite<K, V> {
   private MapEntryLite(
       WireFormat.FieldType keyType, K defaultKey,
       WireFormat.FieldType valueType, V defaultValue) {
-    this(keyType, defaultKey, valueType, defaultValue, false);
-  }
-
-  private MapEntryLite(
-      WireFormat.FieldType keyType, K defaultKey,
-      WireFormat.FieldType valueType, V defaultValue,
-      boolean isNested) {
-    this.metadata = new Metadata<K, V>(keyType, defaultKey, valueType, defaultValue, isNested);
+    this.metadata = new Metadata<K, V>(keyType, defaultKey, valueType, defaultValue);
     this.key = defaultKey;
     this.value = defaultValue;
-    this.values = isNested ? new ArrayList<V>() : null;
+    this.values = metadata.isNested ? new ArrayList<V>() : null;
   }
 
   /** Creates a new MapEntryLite message. */
@@ -143,15 +134,7 @@ public class MapEntryLite<K, V> {
   public static <K, V> MapEntryLite<K, V> newDefaultInstance(
       WireFormat.FieldType keyType, K defaultKey,
       WireFormat.FieldType valueType, V defaultValue) {
-    return newDefaultInstance(keyType, defaultKey, valueType, defaultValue, false);
-  }
-
-  public static <K, V> MapEntryLite<K, V> newDefaultInstance(
-      WireFormat.FieldType keyType, K defaultKey,
-      WireFormat.FieldType valueType, V defaultValue,
-      boolean isNested) {
-    return new MapEntryLite<K, V>(
-        keyType, defaultKey, valueType, defaultValue, isNested);
+    return new MapEntryLite<K, V>(keyType, defaultKey, valueType, defaultValue);
   }
 
   static <K, V> void writeTo(CodedOutputStream output, Metadata<K, V> metadata, K key, V value)
