@@ -229,7 +229,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
   @Override
   public Builder<K, V> toBuilder() {
-    return new Builder<K, V>(metadata, key, values);
+    return new Builder<K, V>(metadata, key, new ArrayList<V>(values));
   }
 
   @Override
@@ -592,7 +592,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
     @Override
     public Builder<K, V> clone() {
-      return new Builder<K, V>(metadata, key, values);
+      return new Builder<K, V>(metadata, key, new ArrayList<V>(values));
     }
   }
 
