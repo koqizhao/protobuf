@@ -340,7 +340,6 @@ public final class NestedMapDemoOuterClass {
           java.lang.Integer, MapEntry<String, String>> defaultEntry =
               com.google.protobuf.MapEntry
               .<java.lang.Integer, MapEntry<String, String>>newDefaultInstance(
-                  NestedMapDemoOuterClass.internal_static_NestedMapDemo_MetadataEntry_descriptor, 
                   com.google.protobuf.WireFormat.FieldType.INT32,
                   0,
                   com.google.protobuf.WireFormat.FieldType.MESSAGE,

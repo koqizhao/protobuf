@@ -63,9 +63,7 @@ public class NestedMapFieldTest {
     mapValue.put("ok2", "ok2_value");
     NestedMapDemo demo = NestedMapDemo.newBuilder().setTitle("ok").setUrl("http://test").addSnippets("ok")
         .putMetadata(1, mapValue).build();
-
-    System.out.println(demo.getMetadataMap());
-    System.out.println();
+    System.out.println(demo);
 
     byte[] bytes = null;
     ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -82,7 +80,7 @@ public class NestedMapFieldTest {
     ByteArrayInputStream is = new ByteArrayInputStream(bytes);
     try {
       NestedMapDemo demo2 = NestedMapDemo.parseFrom(is);
-      System.out.println(demo2.getMetadataMap());
+      System.out.println(demo2);
 
       Assert.assertEquals(demo.getTitle(), demo2.getTitle());
       Assert.assertEquals(demo.getUrl(), demo2.getUrl());
@@ -100,9 +98,7 @@ public class NestedMapFieldTest {
     mapValue.put("ok2", 2);
     NestedMapDemoOuterClass2.NestedMapDemo demo = NestedMapDemoOuterClass2.NestedMapDemo.newBuilder().setTitle("ok")
         .setUrl("http://test").addSnippets("ok").putMetadata(1, mapValue).build();
-
-    System.out.println(demo.getMetadataMap());
-    System.out.println();
+    System.out.println(demo);
 
     byte[] bytes = null;
     ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -118,7 +114,7 @@ public class NestedMapFieldTest {
     ByteArrayInputStream is = new ByteArrayInputStream(bytes);
     try {
       NestedMapDemoOuterClass2.NestedMapDemo demo2 = NestedMapDemoOuterClass2.NestedMapDemo.parseFrom(is);
-      System.out.println(demo2.getMetadataMap());
+      System.out.println(demo2);
 
       Assert.assertEquals(demo.getTitle(), demo2.getTitle());
       Assert.assertEquals(demo.getUrl(), demo2.getUrl());
