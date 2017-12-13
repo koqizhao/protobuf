@@ -131,15 +131,13 @@ public final class MapEntry<K, V> extends AbstractMessage {
       throws InvalidProtocolBufferException {
     try {
       this.metadata = metadata;
+      Map.Entry<K, Object> entry = MapEntryLite.parseEntry(input, metadata, extensionRegistry);
+      this.key = entry.getKey();
       if (metadata.isNested) {
-        Map.Entry<K, List<V>> entry = MapEntryLite.parseEntryForNested(input, metadata, extensionRegistry);
-        this.key = entry.getKey();
         this.value = null;
-        this.values = entry.getValue();
+        this.values = (List<V>) entry.getValue();
       } else {
-        Map.Entry<K, V> entry = MapEntryLite.parseEntry(input, metadata, extensionRegistry);
-        this.key = entry.getKey();
-        this.value = entry.getValue();
+        this.value = (V) entry.getValue();
         this.values = null;
       }
     } catch (InvalidProtocolBufferException e) {
