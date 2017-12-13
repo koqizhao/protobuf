@@ -30,11 +30,16 @@
 
 package com.google.protobuf;
 
+import com.google.protobuf.DescriptorProtos.DescriptorProto;
+import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;
+import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Label;
+import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Type;
+import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
-import com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner;
+import com.google.protobuf.WireFormat.FieldType;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -160,23 +165,20 @@ public final class MapEntry<K, V> extends AbstractMessage {
   public static <K, V> MapEntry<K, V> newDefaultInstance(
       WireFormat.FieldType keyType, K defaultKey,
       WireFormat.FieldType valueType, V defaultValue) {
-      return newDefaultInstance(LeafMapDescriptor.DESCRIPTOR, keyType, defaultKey, valueType, defaultValue, false);
+    Descriptor descriptor = null;
+    if (defaultValue != null && defaultValue instanceof MapEntry)
+      descriptor = MapDescriptors.newNodeMapDescriptor(keyType);
+    else
+      descriptor = MapDescriptors.newLeafMapDescriptor(keyType, valueType);
+    return newDefaultInstance(descriptor, keyType, defaultKey, valueType, defaultValue);
   }
 
   public static <K, V> MapEntry<K, V> newDefaultInstance(
       Descriptor descriptor,
       WireFormat.FieldType keyType, K defaultKey,
       WireFormat.FieldType valueType, V defaultValue) {
-      return newDefaultInstance(descriptor, keyType, defaultKey, valueType, defaultValue, false);
-  }
-
-  public static <K, V> MapEntry<K, V> newDefaultInstance(
-      Descriptor descriptor,
-      WireFormat.FieldType keyType, K defaultKey,
-      WireFormat.FieldType valueType, V defaultValue,
-      boolean isNested) {
-    return new MapEntry<K, V>(
-        descriptor, keyType, defaultKey, valueType, defaultValue, isNested);
+    boolean isNested = defaultValue != null && defaultValue instanceof MapEntry;
+    return new MapEntry<K, V>(descriptor, keyType, defaultKey, valueType, defaultValue, isNested);
   }
   
   public boolean isNested() {
@@ -641,28 +643,61 @@ public final class MapEntry<K, V> extends AbstractMessage {
     return true;
   }
 
-  private static class LeafMapDescriptor {
+  public static class MapDescriptors {
 
-    public static final Descriptor DESCRIPTOR;
-    private static FileDescriptor fileDescriptor;
+    public static Descriptor newLeafMapDescriptor(FieldType keyType, FieldType valueType) {
+      DescriptorProto.Builder leafMapBuilder = DescriptorProto.getDefaultInstance().toBuilder().setName("LeafMap");
 
-    static {
-      java.lang.String[] descriptorData = {
-          "\n\rLeafMap.proto\"%\n\007LeafMap\022\013\n\003key\030\001 \002(\t\022" +
-          "\r\n\005value\030\002 \002(\t"
-      };
-      InternalDescriptorAssigner assigner =
-          new InternalDescriptorAssigner() {
-            public ExtensionRegistry assignDescriptors(
-                FileDescriptor root) {
-              fileDescriptor = root;
-              return null;
-            }
-          };
-      FileDescriptor.internalBuildGeneratedFileFrom(descriptorData, new FileDescriptor[] { }, assigner);
-      DESCRIPTOR = fileDescriptor.getMessageTypes().get(0);
+      FieldDescriptorProto.Builder keyBuilder = FieldDescriptorProto.getDefaultInstance().toBuilder().setName("key")
+          .setNumber(1).setLabel(Label.LABEL_REQUIRED).setType(toType(keyType));
+      leafMapBuilder.addField(keyBuilder);
+
+      FieldDescriptorProto.Builder valueBuilder = FieldDescriptorProto.getDefaultInstance().toBuilder().setName("value")
+          .setNumber(2).setLabel(Label.LABEL_REQUIRED).setType(toType(valueType));
+      leafMapBuilder.addField(valueBuilder);
+
+      FileDescriptorProto leafMapFileProto = FileDescriptorProto.getDefaultInstance().toBuilder().setName("LeafMap.proto")
+          .addMessageType(leafMapBuilder).build();
+
+      try {
+        FileDescriptor leafMapFileDescriptor = FileDescriptor.buildFrom(leafMapFileProto, new FileDescriptor[] {}, true);
+        return leafMapFileDescriptor.getMessageTypes().get(0);
+      } catch (Exception e) {
+        throw new RuntimeException("Error occurred when creating LeafMap descriptor.", e);
+      }
     }
 
+    public static Descriptor newNodeMapDescriptor(FieldType keyType) {
+      DescriptorProto.Builder nodeMapBuilder = DescriptorProto.getDefaultInstance().toBuilder().setName("NodeMap");
+
+      FieldDescriptorProto.Builder keyBuilder = FieldDescriptorProto.getDefaultInstance().toBuilder().setName("key")
+          .setNumber(1).setLabel(Label.LABEL_REQUIRED).setType(toType(keyType));
+      nodeMapBuilder.addField(keyBuilder);
+
+      FieldDescriptorProto.Builder valueBuilder = FieldDescriptorProto.getDefaultInstance().toBuilder().setName("value")
+          .setNumber(2).setLabel(Label.LABEL_REPEATED).setType(Type.TYPE_MESSAGE).setTypeName("LeafMap");
+      nodeMapBuilder.addField(valueBuilder);
+
+      FileDescriptorProto nodeMapFileProto = FileDescriptorProto.getDefaultInstance().toBuilder().setName("NodeMap.proto")
+          .addMessageType(nodeMapBuilder).build();
+
+      try {
+        FileDescriptor nodeMapFileDescriptor = FileDescriptor.buildFrom(nodeMapFileProto, new FileDescriptor[] {}, true);
+        return nodeMapFileDescriptor.getMessageTypes().get(0);
+      } catch (Exception e) {
+        throw new RuntimeException("Error occurred when creating NodeMap descriptor.", e);
+      }
+    }
+
+    public static Type toType(FieldType fieldType) {
+      if (fieldType == null)
+        return null;
+
+      final String TYPE_NAME_PREFIX = "TYPE_";
+      String typeName = TYPE_NAME_PREFIX + fieldType.name();
+      return Type.valueOf(typeName);
+    }
+   
   }
 
 }
