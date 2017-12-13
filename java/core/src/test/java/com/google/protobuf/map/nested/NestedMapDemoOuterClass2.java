@@ -179,7 +179,7 @@ public final class NestedMapDemoOuterClass2 {
               com.google.protobuf.MapEntry<java.lang.Integer, MapEntry<String, Integer>>
               metadata = input.readMessage(
                   MetadataDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-              metadata_.getMutableMap().put(metadata.getKey(), metadata.getValueMap());
+              metadata_.getMutableMap().put(metadata.getKey(), metadata.getMapValue());
               break;
             }
           }
@@ -440,7 +440,7 @@ public final class NestedMapDemoOuterClass2 {
         com.google.protobuf.MapEntry<java.lang.Integer, MapEntry<String, Integer>>
         metadata = MetadataDefaultEntryHolder.defaultEntry.newBuilderForType()
             .setKey(entry.getKey())
-            .setValueMap(entry.getValue())
+            .setValue(entry.getValue())
             .build();
         output.writeMessage(4, metadata);
       }
@@ -471,7 +471,7 @@ public final class NestedMapDemoOuterClass2 {
         com.google.protobuf.MapEntry<java.lang.Integer, MapEntry<String, Integer>>
         metadata = MetadataDefaultEntryHolder.defaultEntry.newBuilderForType()
             .setKey(entry.getKey())
-            .setValueMap(entry.getValue())
+            .setValue(entry.getValue())
             .build();
         size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(4, metadata);

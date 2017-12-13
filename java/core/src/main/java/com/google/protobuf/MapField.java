@@ -100,19 +100,14 @@ public class MapField<K, V> implements MutabilityOracle {
 
     @Override
     public Message convertKeyAndValueToMessage(K key, V value) {
-      Builder<K, Object> builder = defaultEntry.newBuilderForType().setKey(key);
-      if (builder.isNested())
-        builder.setValueMap((Map) value);
-      else
-        builder.setValue(value);
+      Builder<K, Object> builder = defaultEntry.newBuilderForType().setKey(key).setValue(value);
       return builder.buildPartial();
     }
 
     @Override
     public void convertMessageToKeyAndValue(Message message, Map<K, V> map) {
       MapEntry<K, Object> entry = (MapEntry) message;
-      Object value = entry.isNested() ? entry.getValueMap() : entry.getValue();
-      map.put((K) entry.getKey(), (V)value);
+      map.put((K) entry.getKey(), (V) entry.getRealValue());
     }
 
     @Override
