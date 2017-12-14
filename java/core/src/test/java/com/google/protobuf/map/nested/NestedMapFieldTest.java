@@ -139,16 +139,17 @@ public class NestedMapFieldTest {
     FieldDescriptor key = map.getFields().get(0);
     Assert.assertEquals(key.getName(), "key");
     Assert.assertEquals(key.getNumber(), 1);
-    Assert.assertEquals(key.isRequired(), true);
+    Assert.assertEquals(key.isOptional(), true);
     Assert.assertEquals(key.getType().toString(), keyType.toString());
 
     FieldDescriptor value = map.getFields().get(1);
-    Assert.assertEquals(key.getName(), "key");
     Assert.assertEquals(value.getName(), "value");
     Assert.assertEquals(value.getNumber(), 2);
     if (valueType == null)
       valueType = FieldType.MESSAGE;
-    Assert.assertEquals(value.isRepeated(), valueType == FieldType.MESSAGE);
+    boolean isMessage = valueType == FieldType.MESSAGE;
+    Assert.assertEquals(value.isRepeated(), isMessage);
+    Assert.assertNotEquals(value.isOptional(), isMessage);
     Assert.assertEquals(value.getType().toString(), valueType.toString());
   }
 

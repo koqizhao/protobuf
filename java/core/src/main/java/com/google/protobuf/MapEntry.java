@@ -610,12 +610,12 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
     public static Descriptor newDescriptorForLeaf(FieldType keyType, FieldType valueType) {
       TypeDescriptorInfo typeDescriptorInfo = new TypeDescriptorInfo(
-          "LeafMap", "LeafMap.proto", keyType, valueType);
+          "LeafMapEntry", "LeafMapEntry.proto", keyType, valueType);
       return newDescriptor(typeDescriptorInfo);
     }
 
     public static Descriptor newDescriptorForParent(FieldType keyType) {
-      TypeDescriptorInfo typeDescriptorInfo = new TypeDescriptorInfo("NodeMap", "NodeMap.proto", keyType);
+      TypeDescriptorInfo typeDescriptorInfo = new TypeDescriptorInfo("NodeMapEntry", "NodeMapEntry.proto", keyType);
       return newDescriptor(typeDescriptorInfo);
     }
 
@@ -623,7 +623,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
       DescriptorProto.Builder nodeMapBuilder = DescriptorProto.getDefaultInstance().toBuilder().setName(typeDescriptorInfo.typeName);
 
       FieldDescriptorProto.Builder keyBuilder = FieldDescriptorProto.getDefaultInstance().toBuilder().setName("key")
-          .setNumber(1).setLabel(Label.LABEL_REQUIRED).setType(toType(typeDescriptorInfo.keyType));
+          .setNumber(1).setLabel(Label.LABEL_OPTIONAL).setType(toType(typeDescriptorInfo.keyType));
       nodeMapBuilder.addField(keyBuilder);
 
       FieldDescriptorProto.Builder valueBuilder = FieldDescriptorProto.getDefaultInstance().toBuilder().setName("value")
@@ -631,9 +631,9 @@ public final class MapEntry<K, V> extends AbstractMessage {
       Type type = typeDescriptorInfo.valueType == null ? Type.TYPE_MESSAGE : toType(typeDescriptorInfo.valueType);
       valueBuilder.setType(type);
       if (type == Type.TYPE_MESSAGE)
-        valueBuilder.setLabel(Label.LABEL_REPEATED).setTypeName("NodeMapValueMessage");
+        valueBuilder.setLabel(Label.LABEL_REPEATED).setTypeName("NodeMapValueFieldMapEntry");
       else
-        valueBuilder.setLabel(Label.LABEL_REQUIRED);
+        valueBuilder.setLabel(Label.LABEL_OPTIONAL);
       nodeMapBuilder.addField(valueBuilder);
 
       FileDescriptorProto nodeMapFileProto = FileDescriptorProto.getDefaultInstance().toBuilder().setName(typeDescriptorInfo.fileName)
