@@ -127,39 +127,29 @@ public class NestedMapFieldTest {
 
   @Test
   public void customFieldType() throws InvalidProtocolBufferException, DescriptorValidationException {
-    Descriptor leafMap = MapDescriptors.newLeafMapDescriptor(FieldType.BOOL, FieldType.STRING);
-    System.out.println(leafMap);
+    testMapDescriptor(FieldType.BOOL, null);
+    testMapDescriptor(FieldType.BOOL, FieldType.STRING);
+    testMapDescriptor(FieldType.STRING, FieldType.MESSAGE);
+  }
 
-    FieldDescriptor key = leafMap.getFields().get(0);
+  private void testMapDescriptor(FieldType keyType, FieldType valueType) {
+    Descriptor map = valueType == null ? MapDescriptors.newDescriptorForParent(keyType)
+        : MapDescriptors.newDescriptorForLeaf(keyType, valueType);
+
+    FieldDescriptor key = map.getFields().get(0);
     Assert.assertEquals(key.getName(), "key");
     Assert.assertEquals(key.getNumber(), 1);
     Assert.assertEquals(key.isRequired(), true);
-    Assert.assertEquals(key.getType(), FieldDescriptor.Type.BOOL);
-    Assert.assertEquals(key.getJavaType(), FieldDescriptor.JavaType.BOOLEAN);
+    Assert.assertEquals(key.getType().toString(), keyType.toString());
 
-    FieldDescriptor value = leafMap.getFields().get(1);
-    Assert.assertEquals(value.getName(), "value");
-    Assert.assertEquals(value.getNumber(), 2);
-    Assert.assertEquals(value.isRequired(), true);
-    Assert.assertEquals(value.getType(), FieldDescriptor.Type.STRING);
-    Assert.assertEquals(value.getJavaType(), FieldDescriptor.JavaType.STRING);
-
-    Descriptor nodeMap = MapDescriptors.newNodeMapDescriptor(FieldType.BOOL);
-    System.out.println(nodeMap);
-
-    key = nodeMap.getFields().get(0);
+    FieldDescriptor value = map.getFields().get(1);
     Assert.assertEquals(key.getName(), "key");
-    Assert.assertEquals(key.getNumber(), 1);
-    Assert.assertEquals(key.isRequired(), true);
-    Assert.assertEquals(key.getType(), FieldDescriptor.Type.BOOL);
-    Assert.assertEquals(key.getJavaType(), FieldDescriptor.JavaType.BOOLEAN);
-
-    value = nodeMap.getFields().get(1);
     Assert.assertEquals(value.getName(), "value");
     Assert.assertEquals(value.getNumber(), 2);
-    Assert.assertEquals(value.isRepeated(), true);
-    Assert.assertEquals(value.getType(), FieldDescriptor.Type.MESSAGE);
-    Assert.assertEquals(value.getJavaType(), FieldDescriptor.JavaType.MESSAGE);
+    if (valueType == null)
+      valueType = FieldType.MESSAGE;
+    Assert.assertEquals(value.isRepeated(), valueType == FieldType.MESSAGE);
+    Assert.assertEquals(value.getType().toString(), valueType.toString());
   }
 
   @Test

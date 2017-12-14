@@ -79,7 +79,7 @@ src/**/*.trs
 # JavaBuild output.
 target
 *.versionsBackup
-
+*.log
 
 # eclipse project files
 RemoteSystemsTempFiles

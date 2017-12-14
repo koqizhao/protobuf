@@ -146,9 +146,9 @@ public final class MapEntry<K, V> extends AbstractMessage {
       WireFormat.FieldType valueType, V defaultValue) {
     Descriptor descriptor = null;
     if (defaultValue != null && defaultValue instanceof MapEntry)
-      descriptor = MapDescriptors.newNodeMapDescriptor(keyType);
+      descriptor = MapDescriptors.newDescriptorForParent(keyType);
     else
-      descriptor = MapDescriptors.newLeafMapDescriptor(keyType, valueType);
+      descriptor = MapDescriptors.newDescriptorForLeaf(keyType, valueType);
     return newDefaultInstance(descriptor, keyType, defaultKey, valueType, defaultValue);
   }
 
@@ -608,47 +608,42 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
   public static class MapDescriptors {
 
-    public static Descriptor newLeafMapDescriptor(FieldType keyType, FieldType valueType) {
-      DescriptorProto.Builder leafMapBuilder = DescriptorProto.getDefaultInstance().toBuilder().setName("LeafMap");
-
-      FieldDescriptorProto.Builder keyBuilder = FieldDescriptorProto.getDefaultInstance().toBuilder().setName("key")
-          .setNumber(1).setLabel(Label.LABEL_REQUIRED).setType(toType(keyType));
-      leafMapBuilder.addField(keyBuilder);
-
-      FieldDescriptorProto.Builder valueBuilder = FieldDescriptorProto.getDefaultInstance().toBuilder().setName("value")
-          .setNumber(2).setLabel(Label.LABEL_REQUIRED).setType(toType(valueType));
-      leafMapBuilder.addField(valueBuilder);
-
-      FileDescriptorProto leafMapFileProto = FileDescriptorProto.getDefaultInstance().toBuilder().setName("LeafMap.proto")
-          .addMessageType(leafMapBuilder).build();
-
-      try {
-        FileDescriptor leafMapFileDescriptor = FileDescriptor.buildFrom(leafMapFileProto, new FileDescriptor[] {}, true);
-        return leafMapFileDescriptor.getMessageTypes().get(0);
-      } catch (Exception e) {
-        throw new RuntimeException("Error occurred when creating LeafMap descriptor.", e);
-      }
+    public static Descriptor newDescriptorForLeaf(FieldType keyType, FieldType valueType) {
+      TypeDescriptorInfo typeDescriptorInfo = new TypeDescriptorInfo(
+          "LeafMap", "LeafMap.proto", keyType, valueType);
+      return newDescriptor(typeDescriptorInfo);
     }
 
-    public static Descriptor newNodeMapDescriptor(FieldType keyType) {
-      DescriptorProto.Builder nodeMapBuilder = DescriptorProto.getDefaultInstance().toBuilder().setName("NodeMap");
+    public static Descriptor newDescriptorForParent(FieldType keyType) {
+      TypeDescriptorInfo typeDescriptorInfo = new TypeDescriptorInfo("NodeMap", "NodeMap.proto", keyType);
+      return newDescriptor(typeDescriptorInfo);
+    }
+
+    private static Descriptor newDescriptor(TypeDescriptorInfo typeDescriptorInfo) {
+      DescriptorProto.Builder nodeMapBuilder = DescriptorProto.getDefaultInstance().toBuilder().setName(typeDescriptorInfo.typeName);
 
       FieldDescriptorProto.Builder keyBuilder = FieldDescriptorProto.getDefaultInstance().toBuilder().setName("key")
-          .setNumber(1).setLabel(Label.LABEL_REQUIRED).setType(toType(keyType));
+          .setNumber(1).setLabel(Label.LABEL_REQUIRED).setType(toType(typeDescriptorInfo.keyType));
       nodeMapBuilder.addField(keyBuilder);
 
       FieldDescriptorProto.Builder valueBuilder = FieldDescriptorProto.getDefaultInstance().toBuilder().setName("value")
-          .setNumber(2).setLabel(Label.LABEL_REPEATED).setType(Type.TYPE_MESSAGE).setTypeName("LeafMap");
+          .setNumber(2);
+      Type type = typeDescriptorInfo.valueType == null ? Type.TYPE_MESSAGE : toType(typeDescriptorInfo.valueType);
+      valueBuilder.setType(type);
+      if (type == Type.TYPE_MESSAGE)
+        valueBuilder.setLabel(Label.LABEL_REPEATED).setTypeName("NodeMapValueMessage");
+      else
+        valueBuilder.setLabel(Label.LABEL_REQUIRED);
       nodeMapBuilder.addField(valueBuilder);
 
-      FileDescriptorProto nodeMapFileProto = FileDescriptorProto.getDefaultInstance().toBuilder().setName("NodeMap.proto")
+      FileDescriptorProto nodeMapFileProto = FileDescriptorProto.getDefaultInstance().toBuilder().setName(typeDescriptorInfo.fileName)
           .addMessageType(nodeMapBuilder).build();
 
       try {
         FileDescriptor nodeMapFileDescriptor = FileDescriptor.buildFrom(nodeMapFileProto, new FileDescriptor[] {}, true);
         return nodeMapFileDescriptor.getMessageTypes().get(0);
       } catch (Exception e) {
-        throw new RuntimeException("Error occurred when creating NodeMap descriptor.", e);
+        throw new RuntimeException("Error occurred when creating map descriptor.", e);
       }
     }
 
@@ -659,6 +654,24 @@ public final class MapEntry<K, V> extends AbstractMessage {
       final String TYPE_NAME_PREFIX = "TYPE_";
       String typeName = TYPE_NAME_PREFIX + fieldType.name();
       return Type.valueOf(typeName);
+    }
+
+    private static class TypeDescriptorInfo {
+      public String typeName;
+      public String fileName;
+      public FieldType keyType;
+      public FieldType valueType;
+
+      public TypeDescriptorInfo(String typeName, String fileName, FieldType keyType) {
+        this(typeName, fileName, keyType, null);
+      }
+
+      public TypeDescriptorInfo(String typeName, String fileName, FieldType keyType, FieldType valueType) {
+        this.typeName = typeName;
+        this.fileName = fileName;
+        this.keyType = keyType;
+        this.valueType = valueType;
+      }
     }
 
   }
