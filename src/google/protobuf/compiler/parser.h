@@ -116,6 +116,7 @@ class LIBPROTOBUF_EXPORT Parser {
 
  private:
   class LocationRecorder;
+  class MapEntryInfo;
 
   // =================================================================
   // Error recovery helpers
@@ -267,6 +268,19 @@ class LIBPROTOBUF_EXPORT Parser {
     SourceCodeInfo::Location* location_;
 
     void Init(const LocationRecorder& parent);
+  };
+
+  // store raw nested map entry info
+  class LIBPROTOBUF_EXPORT MapEntryInfo {
+    public:
+      MapEntryInfo();
+      ~MapEntryInfo();
+
+      FieldDescriptorProto::Type key_type;
+      string key_type_name;
+      FieldDescriptorProto::Type value_type;
+      string value_type_name;
+      MapEntryInfo* value_entry;
   };
 
   // =================================================================
@@ -423,6 +437,10 @@ class LIBPROTOBUF_EXPORT Parser {
   // "type_name" (if it is not) with the type parsed.
   bool ParseType(FieldDescriptorProto::Type* type,
                  string* type_name);
+
+  // Parse a map and fill in "map_entry_info"
+  bool ParseMap(MapEntryInfo* map_entry_info);
+
   // Parse a user-defined type and fill in "type_name" with the name.
   // If a primitive type is named, it is treated as an error.
   bool ParseUserDefinedType(string* type_name);
