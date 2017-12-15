@@ -853,11 +853,6 @@ bool Parser::ParseMessageFieldNoLabel(
       field->set_label(FieldDescriptorProto::LABEL_REPEATED);
 
       DO(ParseMap(&map_field));
-      MapField* temp = &map_field;
-      while (temp->nested != NULL)
-        temp = temp->nested;
-      map_field.value_type = temp->value_type;
-      map_field.value_type_name = temp->value_type_name;
 
       // Defer setting of the type name of the map field until the
       // field name is parsed. Add the source location though.
@@ -979,6 +974,7 @@ void Parser::GenerateMapEntry(const MapField& map_field,
   field->set_type_name(entry_name);
   entry->set_name(entry_name);
   entry->mutable_options()->set_map_entry(true);
+
   FieldDescriptorProto* key_field = entry->add_field();
   key_field->set_name("key");
   key_field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
@@ -988,15 +984,42 @@ void Parser::GenerateMapEntry(const MapField& map_field,
   } else {
     key_field->set_type_name(map_field.key_type_name);
   }
+
+  MapField map_field2 = map_field;
+  if (map_field.nested != NULL) {
+    DescriptorProto* nested = entry->add_nested_type();
+    nested->set_name(entry_name + "_nested");
+
+    MapField* temp = map_field.nested;
+    for (int i = 1; temp != NULL; i++) {
+      FieldDescriptorProto* nested_field = nested->add_field();
+      nested_field->set_name("key" + to_string(i));
+      nested_field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+      nested_field->set_number(i);
+      if (temp->key_type_name.empty()) {
+        nested_field->set_type(temp->key_type);
+      } else {
+        nested_field->set_type_name(temp->key_type_name);
+      }
+
+      if (temp->nested == NULL) {
+        map_field2 = *temp;
+      }
+
+      temp = temp->nested;
+    }
+  }
+
   FieldDescriptorProto* value_field = entry->add_field();
   value_field->set_name("value");
   value_field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
   value_field->set_number(2);
-  if (map_field.value_type_name.empty()) {
-    value_field->set_type(map_field.value_type);
+  if (map_field2.value_type_name.empty()) {
+    value_field->set_type(map_field2.value_type);
   } else {
-    value_field->set_type_name(map_field.value_type_name);
+    value_field->set_type_name(map_field2.value_type_name);
   }
+
   // Propagate the "enforce_utf8" option to key and value fields if they
   // are strings. This helps simplify the implementation of code generators
   // and also reflection-based parsing code.

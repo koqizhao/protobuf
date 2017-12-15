@@ -5403,7 +5403,7 @@ bool DescriptorBuilder::ValidateMapEntry(FieldDescriptor* field,
       message->extension_count() != 0 ||
       field->label() != FieldDescriptor::LABEL_REPEATED ||
       message->extension_range_count() != 0 ||
-      message->nested_type_count() != 0 || message->enum_type_count() != 0 ||
+      message->enum_type_count() != 0 ||
       // Must contain exactly two fields
       message->field_count() != 2 ||
       // Field name and message name must match
