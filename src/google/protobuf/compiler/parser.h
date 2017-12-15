@@ -116,7 +116,7 @@ class LIBPROTOBUF_EXPORT Parser {
 
  private:
   class LocationRecorder;
-  class MapEntryInfo;
+  struct MapField;
 
   // =================================================================
   // Error recovery helpers
@@ -268,19 +268,6 @@ class LIBPROTOBUF_EXPORT Parser {
     SourceCodeInfo::Location* location_;
 
     void Init(const LocationRecorder& parent);
-  };
-
-  // store raw nested map entry info
-  class LIBPROTOBUF_EXPORT MapEntryInfo {
-    public:
-      MapEntryInfo();
-      ~MapEntryInfo();
-
-      FieldDescriptorProto::Type key_type;
-      string key_type_name;
-      FieldDescriptorProto::Type value_type;
-      string value_type_name;
-      MapEntryInfo* value_entry;
   };
 
   // =================================================================
@@ -438,8 +425,8 @@ class LIBPROTOBUF_EXPORT Parser {
   bool ParseType(FieldDescriptorProto::Type* type,
                  string* type_name);
 
-  // Parse a map and fill in "map_entry_info"
-  bool ParseMap(MapEntryInfo* map_entry_info);
+  // Parse a map and fill in "map_field"
+  bool ParseMap(MapField* map_field);
 
   // Parse a user-defined type and fill in "type_name" with the name.
   // If a primitive type is named, it is treated as an error.
@@ -504,7 +491,16 @@ class LIBPROTOBUF_EXPORT Parser {
     string key_type_name;
     string value_type_name;
 
-    MapField() : is_map_field(false) {}
+    MapField* nested;
+
+    MapField() : is_map_field(false), nested(NULL) {
+
+    }
+
+    ~MapField() {
+      if (nested != NULL)
+        delete nested;
+    }
   };
   // Desugar the map syntax to generate a nested map entry message.
   void GenerateMapEntry(const MapField& map_field, FieldDescriptorProto* field,

@@ -423,18 +423,6 @@ void Parser::LocationRecorder::AttachComments(
 
 // -------------------------------------------------------------------
 
-Parser::MapEntryInfo::MapEntryInfo() {
-  this->value_entry = NULL;
-}
-
-Parser::MapEntryInfo::~MapEntryInfo() {
-  if (this->value_entry != NULL) {
-    delete this->value_entry;
-  }
-}
-
-// -------------------------------------------------------------------
-
 void Parser::SkipStatement() {
   while (true) {
     if (AtEnd()) {
@@ -864,15 +852,12 @@ bool Parser::ParseMessageFieldNoLabel(
       }
       field->set_label(FieldDescriptorProto::LABEL_REPEATED);
 
-      MapEntryInfo map_entry_info;
-      DO(ParseMap(&map_entry_info));
-      map_field.key_type = map_entry_info.key_type;
-      map_field.key_type_name = map_entry_info.key_type_name;
-      while (map_entry_info.value_entry != NULL) {
-        map_entry_info = *map_entry_info.value_entry;
-      }
-      map_field.value_type = map_entry_info.value_type;
-      map_field.value_type_name = map_entry_info.value_type_name;
+      DO(ParseMap(&map_field));
+      MapField* temp = &map_field;
+      while (temp->nested != NULL)
+        temp = temp->nested;
+      map_field.value_type = temp->value_type;
+      map_field.value_type_name = temp->value_type_name;
 
       // Defer setting of the type name of the map field until the
       // field name is parsed. Add the source location though.
@@ -1995,17 +1980,17 @@ bool Parser::ParseType(FieldDescriptorProto::Type* type,
   return true;
 }
 
-bool Parser::ParseMap(MapEntryInfo* map_entry_info) {
+bool Parser::ParseMap(MapField* map_field) {
   DO(Consume("<"));
-  DO(ParseType(&map_entry_info->key_type, &map_entry_info->key_type_name));
+  DO(ParseType(&map_field->key_type, &map_field->key_type_name));
   DO(Consume(","));
 
   if (LookingAt("map")) {
     DO(Consume("map"));
-    map_entry_info->value_entry = new MapEntryInfo();
-    DO(ParseMap(map_entry_info->value_entry));
+    map_field->nested = new MapField();
+    DO(ParseMap(map_field->nested));
   } else {
-    DO(ParseType(&map_entry_info->value_type, &map_entry_info->value_type_name));
+    DO(ParseType(&map_field->value_type, &map_field->value_type_name));
   }
 
   DO(Consume(">"));
