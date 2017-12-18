@@ -988,7 +988,7 @@ void Parser::GenerateMapEntry(const MapField& map_field,
   MapField map_field2 = map_field;
   if (map_field.nested != NULL) {
     DescriptorProto* nested = entry->add_nested_type();
-    nested->set_name(entry_name + "_nested");
+    nested->set_name("NodeMapEntry");
 
     MapField* temp = map_field.nested;
     for (int i = 1; temp != NULL; i++) {
