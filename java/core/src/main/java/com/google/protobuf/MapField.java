@@ -39,8 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.protobuf.MapEntry.Builder;
-
 /**
  * Internal representation of map fields in generated messages.
  *
@@ -100,8 +98,7 @@ public class MapField<K, V> implements MutabilityOracle {
 
     @Override
     public Message convertKeyAndValueToMessage(K key, V value) {
-      Builder<K, Object> builder = defaultEntry.newBuilderForType().setKey(key).setValue(value);
-      return builder.buildPartial();
+      return defaultEntry.newBuilderForType().setKey(key).setValue(value).buildPartial();
     }
 
     @Override

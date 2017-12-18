@@ -99,7 +99,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
       WireFormat.FieldType valueType, V defaultValue) {
     this.metadata = new Metadata<K, V>(descriptor, keyType, defaultKey, valueType, defaultValue, isMapEntry(defaultValue));
     this.key = defaultKey;
-    this.value = toValue(metadata);
+    this.value = toDefaultValue(metadata);
   }
 
   /** Create a MapEntry with the provided key and value. */
@@ -164,12 +164,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
   }
   
   public Map getMapValue() {
-    Map map = new HashMap();
-    for (MapEntry entry : (List<MapEntry>) value) {
-      map.put(entry.getKey(), entry.getRealValue());
-    }
-
-    return map;
+    return toMapValue(value);
   }
 
   public Object getRealValue() {
@@ -216,7 +211,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
   @Override
   public MapEntry<K, V> getDefaultInstanceForType() {
-    return new MapEntry<K, V>(metadata, metadata.defaultKey, toValue(metadata));
+    return new MapEntry<K, V>(metadata, metadata.defaultKey, toDefaultValue(metadata));
   }
 
   @Override
@@ -264,34 +259,16 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
   @Override
   public int getRepeatedFieldCount(FieldDescriptor field) {
-    List<?> value = getNestedValue(field);
-    return value == null ? 0 : value.size();
+    List values = (List) value;
+    return value == null ? 0 : values.size();
   }
 
   @Override
   public Object getRepeatedField(FieldDescriptor field, int index) {
-    List<?> value = getNestedValue(field);
-    if (value == null) {
-      throw new IndexOutOfBoundsException();
-    } else {
-      return value.get(index);
-    }
+    List values = (List) value;
+    return values.get(index);
   }
   
-  private List<?> getNestedValue(FieldDescriptor field) {
-     if (!isNested()) {
-      throw new RuntimeException(
-          "There is no repeated field in a map entry message.");
-    }
-
-    if (field.getNumber() != 2) {
-      throw new RuntimeException(
-          "There is no repeated key field in a map entry message.");
-    }
-
-    return (List) value;
-  }
-
   @Override
   public UnknownFieldSet getUnknownFields() {
     return UnknownFieldSet.getDefaultInstance();
@@ -307,7 +284,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
     private Object value;
 
     private Builder(Metadata<K, V> metadata) {
-      this(metadata, metadata.defaultKey, toValue(metadata));
+      this(metadata, metadata.defaultKey, toDefaultValue(metadata));
     }
 
     private Builder(Metadata<K, V> metadata, K key, Object value) {
@@ -329,12 +306,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
     }
 
     public Map getMapValue() {
-      Map map = new HashMap();
-      for (MapEntry entry : (List<MapEntry>) value) {
-        map.put(entry.getKey(), entry.getRealValue());
-      }
-
-      return map;
+      return toMapValue(value);
     }
 
     public Object getRealValue() {
@@ -426,7 +398,9 @@ public final class MapEntry<K, V> extends AbstractMessage {
         throw new RuntimeException(
             "\"" + field.getFullName() + "\" is not a message value field.");
       }
-      return ((Message) metadata.defaultValue).newBuilderForType();
+
+      Message message = (Message) (isNested() ? metadata.defaultValue : value);
+      return message.newBuilderForType();
     }
 
     @Override
@@ -464,23 +438,15 @@ public final class MapEntry<K, V> extends AbstractMessage {
     @Override
     public Builder<K, V> setRepeatedField(FieldDescriptor field, int index,
         Object value) {
-      if (!isNested()) {
-        throw new RuntimeException(
-            "There is no repeated field in a map entry message.");
-      }
-
-      ((List)this.value).set(index, (V)value);
+      List values = (List) value;
+      values.set(index, value);
       return this;
     }
 
     @Override
     public Builder<K, V> addRepeatedField(FieldDescriptor field, Object value) {
-      if (!metadata.isNested) {
-        throw new RuntimeException(
-            "There is no repeated field in a map entry message.");
-      }
-
-      ((List)this.value).add(value);
+      List values = (List) value;
+      values.add(value);
       return this;
     }
 
@@ -492,7 +458,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
     @Override
     public MapEntry<K, V> getDefaultInstanceForType() {
-      return new MapEntry<K, V>(metadata, metadata.defaultKey, toValue(metadata));
+      return new MapEntry<K, V>(metadata, metadata.defaultKey, toDefaultValue(metadata));
     }
 
     @Override
@@ -530,34 +496,16 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
     @Override
     public int getRepeatedFieldCount(FieldDescriptor field) {
-      List<?> value = getNestedValue(field);
-      return value == null ? 0 : value.size();
+      List values = (List) value;
+      return values == null ? 0 : values.size();
     }
 
     @Override
     public Object getRepeatedField(FieldDescriptor field, int index) {
-      List<?> value = getNestedValue(field);
-      if (value == null) {
-        throw new IndexOutOfBoundsException();
-      } else {
-        return value.get(index);
-      }
+      List values = (List) value;
+      return values.get(index);
     }
   
-    private List<?> getNestedValue(FieldDescriptor field) {
-      if (!isNested()) {
-        throw new RuntimeException(
-            "There is no repeated field in a map entry message.");
-      }
-
-      if (field.getNumber() != 2) {
-        throw new RuntimeException(
-            "There is no repeated key field in a map entry message.");
-      }
-
-      return (List<?>) value;
-    }
-
     @Override
     public UnknownFieldSet getUnknownFields() {
       return UnknownFieldSet.getDefaultInstance();
@@ -587,18 +535,20 @@ public final class MapEntry<K, V> extends AbstractMessage {
     return value != null && value instanceof MapEntry;
   }
 
-  private static Object toValue(Metadata metadata) {
-    return metadata.isNested ? toList(metadata.defaultValue) : metadata.defaultValue;
+  private static Object toDefaultValue(Metadata metadata) {
+    return metadata.isNested ? new ArrayList() : metadata.defaultValue;
+  }
+
+  private static Map toMapValue(Object value) {
+    Map map = new HashMap();
+    for (MapEntry entry : (List<MapEntry>) value) {
+      map.put(entry.getKey(), entry.getRealValue());
+    }
+    return map;
   }
 
   private static Object copyValue(Metadata metadata, Object value) {
     return metadata.isNested ? new ArrayList((List) value) : value;
-  }
-
-  private static <E> List<E> toList(E e) {
-    List<E> list = new ArrayList<E>();
-    list.add(e);
-    return list;
   }
 
   public static class MapDescriptors {
