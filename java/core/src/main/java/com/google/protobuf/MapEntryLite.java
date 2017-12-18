@@ -60,15 +60,18 @@ public class MapEntryLite<K, V> {
     public Metadata(
         WireFormat.FieldType keyType, K defaultKey,
         WireFormat.FieldType valueType, V defaultValue) {
+      this(keyType, defaultKey, valueType, defaultValue, false);
+    }
+
+    public Metadata(
+        WireFormat.FieldType keyType, K defaultKey,
+        WireFormat.FieldType valueType, V defaultValue,
+        boolean isNested) {
       this.keyType = keyType;
       this.defaultKey = defaultKey;
       this.valueType = valueType;
       this.defaultValue = defaultValue;
-      isNested = determineIsNested();
-    }
-
-    protected boolean determineIsNested() {
-      return false;
+      this.isNested = isNested;
     }
 
   }
