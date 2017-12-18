@@ -186,8 +186,8 @@ bool SetNestedMapVariables(const FieldDescriptor* descriptor,
                            Context* context,
                            map<string, string>* variables) {
   const Descriptor* message = descriptor->message_type();
-  const Descriptor* node_map_entry = message->FindNestedTypeByName("NodeMapEntry");
-  if (node_map_entry == NULL) {
+  const Descriptor* map_entry_nested_keys = message->FindNestedTypeByName("MapEntryNestedKeys");
+  if (map_entry_nested_keys == NULL) {
     return false;
   }
 
@@ -220,9 +220,9 @@ bool SetNestedMapVariables(const FieldDescriptor* descriptor,
     "$value_default_value$", map_entry_new_default_instance_tpl, 1);
 
   ClassNameResolver* name_resolver = context->GetNameResolver();
-  int field_count = node_map_entry->field_count();
+  int field_count = map_entry_nested_keys->field_count();
   for (int i = 1; i <= field_count; i++) {
-    const FieldDescriptor* field = node_map_entry->FindFieldByNumber(i);
+    const FieldDescriptor* field = map_entry_nested_keys->FindFieldByNumber(i);
     string boxed_type = TypeName(field, name_resolver, true);
     string wire_type = WireType(field);
     string default_value = DefaultValue(field, true, name_resolver);

@@ -1314,10 +1314,10 @@ public final class NestedMapDemoOuterClass2 {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_NestedMapDemo_MetadataEntry_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_NestedMapDemo_MetadataEntry_NodeMapEntry_descriptor;
+    internal_static_NestedMapDemo_MetadataEntry_MapEntryNestedKeys_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_NestedMapDemo_MetadataEntry_NodeMapEntry_fieldAccessorTable;
+      internal_static_NestedMapDemo_MetadataEntry_MapEntryNestedKeys_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -1327,12 +1327,12 @@ public final class NestedMapDemoOuterClass2 {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\023NestedMapDemo.proto\"\274\001\n\rNestedMapDemo\022" +
+      "\n\023NestedMapDemo.proto\"\302\001\n\rNestedMapDemo\022" +
       "\013\n\003url\030\001 \002(\t\022\r\n\005title\030\002 \001(\t\022\020\n\010snippets\030" +
       "\003 \003(\t\022.\n\010metadata\030\004 \003(\0132\034.NestedMapDemo." +
-      "MetadataEntry\032M\n\rMetadataEntry\022\013\n\003key\030\001 " +
-      "\001(\005\022\r\n\005value\030\002 \001(\005\032\034\n\014NodeMapEntry\022\014\n\004ke" +
-      "y1\030\001 \001(\t:\0028\001"
+      "MetadataEntry\032S\n\rMetadataEntry\022\013\n\003key\030\001 " +
+      "\001(\005\022\r\n\005value\030\002 \001(\005\032\"\n\022MapEntryNestedKeys" +
+      "\022\014\n\004key1\030\001 \001(\t:\0028\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -1358,11 +1358,11 @@ public final class NestedMapDemoOuterClass2 {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_NestedMapDemo_MetadataEntry_descriptor,
         new java.lang.String[] { "Key", "Value", });
-    internal_static_NestedMapDemo_MetadataEntry_NodeMapEntry_descriptor =
+    internal_static_NestedMapDemo_MetadataEntry_MapEntryNestedKeys_descriptor =
       internal_static_NestedMapDemo_MetadataEntry_descriptor.getNestedTypes().get(0);
-    internal_static_NestedMapDemo_MetadataEntry_NodeMapEntry_fieldAccessorTable = new
+    internal_static_NestedMapDemo_MetadataEntry_MapEntryNestedKeys_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_NestedMapDemo_MetadataEntry_NodeMapEntry_descriptor,
+        internal_static_NestedMapDemo_MetadataEntry_MapEntryNestedKeys_descriptor,
         new java.lang.String[] { "Key1", });
   }
 
