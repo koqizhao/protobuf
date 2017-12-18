@@ -2,6 +2,9 @@ package com.google.protobuf.map.nested;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -157,6 +160,21 @@ public class NestedMapFieldTest {
   public void testToType() {
     Type type = MapDescriptors.toType(FieldType.BOOL);
     Assert.assertEquals(Type.TYPE_BOOL, type);
+  }
+  
+  @Test
+  public void dotnetInput() throws IOException {
+    String inputPath = "/home/koqizhao/Downloads/demo.bin";
+    File file = new File(inputPath);
+    FileInputStream is = null;
+    try {
+      is = new FileInputStream(file);
+      DemoOuterClass.Demo demo = DemoOuterClass.Demo.parseFrom(is);
+      System.out.println(demo);
+    } finally {
+      if (is != null)
+        is.close();
+    }
   }
 
 }
