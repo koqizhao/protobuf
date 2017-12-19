@@ -36,6 +36,8 @@
 #include <google/protobuf/compiler/java/java_name_resolver.h>
 #include <google/protobuf/io/printer.h>
 
+#include <limits>
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -56,7 +58,7 @@ string Replace(string str, string src, string dest, int replace_count) {
 }
 
 string Replace(string str, string src, string dest) {
-  return Replace(str, src, dest, 100);
+  return Replace(str, src, dest, numeric_limits<int>::max());
 }
 
 string Multiple(const string& str, int n) {

@@ -573,12 +573,12 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
       FieldDescriptorProto.Builder valueBuilder = FieldDescriptorProto.getDefaultInstance().toBuilder().setName("value")
           .setNumber(2);
-      Type type = typeDescriptorInfo.valueType == null ? Type.TYPE_MESSAGE : toType(typeDescriptorInfo.valueType);
+      boolean isParent = typeDescriptorInfo.valueType == null;
+      valueBuilder.setLabel(isParent ? Label.LABEL_REPEATED : Label.LABEL_OPTIONAL);
+      Type type = isParent ? Type.TYPE_MESSAGE : toType(typeDescriptorInfo.valueType);
       valueBuilder.setType(type);
       if (type == Type.TYPE_MESSAGE)
-        valueBuilder.setLabel(Label.LABEL_REPEATED).setTypeName("NodeMapValueFieldMapEntry");
-      else
-        valueBuilder.setLabel(Label.LABEL_OPTIONAL);
+        valueBuilder.setTypeName(isParent ? "NodeMapValueFieldMapEntry" : "LeafMapValueFieldMapEntry");
       nodeMapBuilder.addField(valueBuilder);
 
       FileDescriptorProto nodeMapFileProto = FileDescriptorProto.getDefaultInstance().toBuilder().setName(typeDescriptorInfo.fileName)

@@ -173,6 +173,44 @@ public class NestedMapFieldTest {
   }
 
   @Test
+  public void nestedMapDemoObjTest4() throws IOException {
+    Map<String, Demo> mapValue = new HashMap<String, Demo>();
+    mapValue.put("ok1", Demo.newBuilder().setTitle("ok").setUrl("http://test").addSnippets("ok").putMetadata(1, "11")
+        .putMetadata(2, "22").build());
+    mapValue.put("ok2", Demo.newBuilder().setTitle("ok2").setUrl("http://test2").addSnippets("ok2").putMetadata(3, "33")
+        .putMetadata(4, "44").build());
+    NestedMapDemo4.NestedMapDemo demo = NestedMapDemo4.NestedMapDemo.newBuilder().setTitle("ok").setUrl("http://test")
+        .addSnippets("ok").putMetadata(1, mapValue).build();
+    System.out.println(demo);
+
+    byte[] bytes = null;
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    try {
+      demo.writeTo(os);
+      bytes = os.toByteArray();
+      System.out.println("bytes length: " + bytes.length);
+    } finally {
+      os.close();
+    }
+
+    System.out.println();
+
+    ByteArrayInputStream is = new ByteArrayInputStream(bytes);
+    try {
+      NestedMapDemo4.NestedMapDemo demo2 = NestedMapDemo4.NestedMapDemo.parseFrom(is);
+      System.out.println(demo2);
+
+      Assert.assertEquals(demo.getTitle(), demo2.getTitle());
+      Assert.assertEquals(demo.getUrl(), demo2.getUrl());
+      Assert.assertEquals(demo.getSnippetsList(), demo2.getSnippetsList());
+      Assert.assertEquals(demo.getMetadataMap(), demo2.getMetadataMap());
+      Assert.assertEquals(demo, demo2);
+    } finally {
+      is.close();
+    }
+  }
+
+  @Test
   public void protobufMapTest() throws IOException {
     Map<Integer, Map<Integer, Integer>> expected = new HashMap<Integer, Map<Integer, Integer>>();
     expected.put(11, new HashMap<Integer, Integer>());
@@ -216,7 +254,7 @@ public class NestedMapFieldTest {
 
     Assert.assertEquals(expected, genericMap.getMap());
   }
-  
+
   @Test
   public void protobufMapTest2() throws IOException {
     Map<Integer, Map<Integer, Integer>> expected = new HashMap<Integer, Map<Integer, Integer>>();
@@ -333,7 +371,8 @@ public class NestedMapFieldTest {
   }
 
   private void testMapDescriptor(FieldType keyType, FieldType valueType) {
-    Descriptor map = valueType == null ? MapDescriptors.newDescriptorForParent(keyType)
+    boolean isParent = valueType == null;
+    Descriptor map = isParent ? MapDescriptors.newDescriptorForParent(keyType)
         : MapDescriptors.newDescriptorForLeaf(keyType, valueType);
 
     FieldDescriptor key = map.getFields().get(0);
@@ -345,11 +384,10 @@ public class NestedMapFieldTest {
     FieldDescriptor value = map.getFields().get(1);
     Assert.assertEquals(value.getName(), "value");
     Assert.assertEquals(value.getNumber(), 2);
-    if (valueType == null)
+    if (isParent)
       valueType = FieldType.MESSAGE;
-    boolean isMessage = valueType == FieldType.MESSAGE;
-    Assert.assertEquals(value.isRepeated(), isMessage);
-    Assert.assertNotEquals(value.isOptional(), isMessage);
+    Assert.assertEquals(value.isRepeated(), isParent);
+    Assert.assertNotEquals(value.isOptional(), isParent);
     Assert.assertEquals(value.getType().toString(), valueType.toString());
   }
 
