@@ -100,8 +100,8 @@ public class NestedMapFieldTest {
     Map<String, Integer> mapValue = new HashMap<String, Integer>();
     mapValue.put("ok1", 1);
     mapValue.put("ok2", 2);
-    NestedMapDemoOuterClass2.NestedMapDemo demo = NestedMapDemoOuterClass2.NestedMapDemo.newBuilder().setTitle("ok")
-        .setUrl("http://test").addSnippets("ok").putMetadata(1, mapValue).build();
+    NestedMapDemo2.NestedMapDemo demo = NestedMapDemo2.NestedMapDemo.newBuilder().setTitle("ok").setUrl("http://test")
+        .addSnippets("ok").putMetadata(1, mapValue).build();
     System.out.println(demo);
 
     byte[] bytes = null;
@@ -117,7 +117,7 @@ public class NestedMapFieldTest {
     System.out.println();
     ByteArrayInputStream is = new ByteArrayInputStream(bytes);
     try {
-      NestedMapDemoOuterClass2.NestedMapDemo demo2 = NestedMapDemoOuterClass2.NestedMapDemo.parseFrom(is);
+      NestedMapDemo2.NestedMapDemo demo2 = NestedMapDemo2.NestedMapDemo.parseFrom(is);
       System.out.println(demo2);
 
       Assert.assertEquals(demo.getTitle(), demo2.getTitle());
@@ -128,6 +128,48 @@ public class NestedMapFieldTest {
     } finally {
       is.close();
     }
+  }
+
+  @Test
+  public void nestedMapDemoObjTest3() throws IOException {
+    Map<Integer, Map<Integer, Integer>> expected = new HashMap<Integer, Map<Integer, Integer>>();
+    expected.put(11, new HashMap<Integer, Integer>());
+    expected.get(11).put(12, 13);
+
+    expected.put(21, new HashMap<Integer, Integer>());
+    expected.get(21).put(22, 23);
+    expected.get(21).put(24, 25);
+
+    NestedMapDemo3.NestedMapDemo demo = NestedMapDemo3.NestedMapDemo.newBuilder().putAllMetadata(expected).build();
+
+    byte[] bytes = null;
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    try {
+      demo.writeTo(os);
+      bytes = os.toByteArray();
+      System.out.println("bytes length: " + bytes.length);
+    } finally {
+      os.close();
+    }
+
+    System.out.println();
+    ByteArrayInputStream is = new ByteArrayInputStream(bytes);
+    NestedMapDemo3.NestedMapDemo demo2;
+    try {
+      demo2 = NestedMapDemo3.NestedMapDemo.parseFrom(is);
+    } finally {
+      is.close();
+    }
+
+    System.out.println("Expected: ");
+    System.out.println(expected);
+    System.out.println();
+
+    System.out.println("Actual: ");
+    System.out.println(demo2.getMetadataMap());
+    System.out.println();
+
+    Assert.assertEquals(demo, demo2);
   }
 
   @Test
@@ -174,6 +216,48 @@ public class NestedMapFieldTest {
 
     Assert.assertEquals(expected, genericMap.getMap());
   }
+  
+  @Test
+  public void protobufMapTest2() throws IOException {
+    Map<Integer, Map<Integer, Integer>> expected = new HashMap<Integer, Map<Integer, Integer>>();
+    expected.put(11, new HashMap<Integer, Integer>());
+    expected.get(11).put(12, 13);
+
+    expected.put(21, new HashMap<Integer, Integer>());
+    expected.get(21).put(22, 23);
+    expected.get(21).put(24, 25);
+
+    ProtobufMap<Integer, Map<Integer, Integer>> genericMap = new ProtobufMap<Integer, Map<Integer, Integer>>(
+        FieldType.INT32, 0, FieldType.INT32, FieldType.INT32);
+    genericMap.setMap(expected);
+
+    byte[] bytes = null;
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    try {
+      genericMap.writeTo(os);
+      bytes = os.toByteArray();
+      System.out.println("bytes length: " + bytes.length);
+    } finally {
+      os.close();
+    }
+
+    System.out.println();
+    ByteArrayInputStream is = new ByteArrayInputStream(bytes);
+    NestedMapDemo3.NestedMapDemo demo2;
+    try {
+      demo2 = NestedMapDemo3.NestedMapDemo.parseFrom(is);
+    } finally {
+      is.close();
+    }
+
+    System.out.println("Expected: ");
+    System.out.println(expected);
+    System.out.println();
+
+    System.out.println("Actual: ");
+    System.out.println(demo2.getMetadataMap());
+    System.out.println();
+  }
 
   @Test
   public void nestedMapDemoObjTestForDotnetInput() throws IOException {
@@ -186,7 +270,7 @@ public class NestedMapFieldTest {
 
     NestedMapDemo expected = NestedMapDemo.newBuilder().setUrl("http://www.ctrip.com").setTitle("test")
         .addSnippets("t1").addSnippets("t2").putAllMetadata(mapValue).build();
-    
+
     InputStream is = null;
     NestedMapDemo demo;
     try {

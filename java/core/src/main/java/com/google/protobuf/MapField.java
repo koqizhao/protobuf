@@ -149,6 +149,36 @@ public class MapField<K, V> implements MutabilityOracle {
         defaultEntry, StorageMode.MAP, new LinkedHashMap<K, V>());
   }
 
+  private static boolean isInitialized(Map map) {
+    if (map == null || map.isEmpty())
+      return true;
+
+    Boolean isMap = null;
+    Boolean isMessage = null;
+    for (Object value : map.values()) {
+      if (isMap == null)
+        isMap = value != null && value instanceof Map;
+      
+      if (isMap) {
+        if (!isInitialized((Map) value))
+          return false;
+
+        continue;
+      }
+
+      if (isMessage == null)
+        isMessage = value != null && value instanceof MessageLite;
+
+      if (!isMessage)
+        return true;
+
+      MessageLite message = (MessageLite) value;
+      if (!message.isInitialized())
+        return false;
+    }
+
+    return true;
+  }
 
   private Message convertKeyAndValueToMessage(K key, V value) {
     return converter.convertKeyAndValueToMessage(key, value);
@@ -222,6 +252,10 @@ public class MapField<K, V> implements MutabilityOracle {
   @Override
   public int hashCode() {
     return MapFieldLite.<K, V>calculateHashCodeForMap(getMap());
+  }
+
+  public boolean isInitialized() {
+    return isInitialized(getMap());
   }
 
   /** Returns a deep copy of this MapField. */

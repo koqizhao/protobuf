@@ -51,6 +51,15 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
+std::string TrimStart(std::string s, std::string prefix) {  
+  if (s.empty()) {
+    return s; 
+  }
+ 
+  s.erase(0, s.find_first_not_of(prefix)); 
+  return s; 
+}
+
 SharedCodeGenerator::SharedCodeGenerator(const FileDescriptor* file,
                                          const Options& options)
     : name_resolver_(new ClassNameResolver), file_(file), options_(options) {}
@@ -204,7 +213,7 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
     const string& dependency = dependencies[i].second;
     printer->Print(
         "      $dependency$.getDescriptor(),\n",
-        "dependency", dependency);
+        "dependency", TrimStart(dependency, "."));
   }
 
   printer->Print(
