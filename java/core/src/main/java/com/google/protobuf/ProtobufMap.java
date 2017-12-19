@@ -50,7 +50,7 @@ public class ProtobufMap<K, V> {
             done = true;
             break;
           case 10:
-            MapEntry mapEntry = codedOutStream.readMessage(_defaultEntry.getParserForType(),
+            MapEntry mapEntry = (MapEntry) codedOutStream.readMessage(_defaultEntry.getParserForType(),
                 ExtensionRegistryLite.getEmptyRegistry());
             getMap().put((K) mapEntry.getKey(), (V) mapEntry.getMapValue());
             break;
