@@ -693,7 +693,6 @@ void MessageBuilderGenerator::GenerateIsInitialized(
               printer->Print(
                 "for ($type$ item : get$name$().values()) {\n"
                 "  if (!item.isInitialized()) {\n"
-                "    memoizedIsInitialized = 0;\n"
                 "    return false;\n"
                 "  }\n"
                 "}\n",
