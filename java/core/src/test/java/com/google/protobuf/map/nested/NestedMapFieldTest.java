@@ -177,6 +177,16 @@ public class NestedMapFieldTest {
 
   @Test
   public void nestedMapDemoObjTestForDotnetInput() throws IOException {
+    Map<String, String> nestedMapValue = new HashMap<String, String>();
+    nestedMapValue.put("k1", "v1");
+    nestedMapValue.put("k2", "v2");
+
+    Map<Integer, Map<String, String>> mapValue = new HashMap<Integer, Map<String, String>>();
+    mapValue.put(1, nestedMapValue);
+
+    NestedMapDemo expected = NestedMapDemo.newBuilder().setUrl("http://www.ctrip.com").setTitle("test")
+        .addSnippets("t1").addSnippets("t2").putAllMetadata(mapValue).build();
+    
     InputStream is = null;
     NestedMapDemo demo;
     try {
@@ -186,12 +196,6 @@ public class NestedMapFieldTest {
       if (is != null)
         is.close();
     }
-
-    Map<String, String> nestedMapValue = new HashMap<String, String>();
-    nestedMapValue.put("k1", "v1");
-    nestedMapValue.put("k2", "v2");
-    NestedMapDemo expected = NestedMapDemo.newBuilder().setUrl("http://www.ctrip.com").setTitle("test")
-        .addSnippets("t1").addSnippets("t2").putMetadata(1, nestedMapValue).build();
 
     System.out.println("Expected: ");
     System.out.println(expected);
@@ -206,6 +210,14 @@ public class NestedMapFieldTest {
 
   @Test
   public void protobufMapTestForDotnetInput() throws IOException {
+    Map<Integer, Map<Integer, Integer>> expected = new HashMap<Integer, Map<Integer, Integer>>();
+    expected.put(11, new HashMap<Integer, Integer>());
+    expected.get(11).put(12, 13);
+
+    expected.put(21, new HashMap<Integer, Integer>());
+    expected.get(21).put(22, 23);
+    expected.get(21).put(24, 25);
+
     ProtobufMap<Integer, Map<Integer, Integer>> genericMap = new ProtobufMap<Integer, Map<Integer, Integer>>(
         FieldType.INT32, 0, FieldType.INT32, FieldType.INT32);
 
@@ -217,14 +229,6 @@ public class NestedMapFieldTest {
       if (is != null)
         is.close();
     }
-
-    Map<Integer, Map<Integer, Integer>> expected = new HashMap<Integer, Map<Integer, Integer>>();
-    expected.put(11, new HashMap<Integer, Integer>());
-    expected.get(11).put(12, 13);
-
-    expected.put(21, new HashMap<Integer, Integer>());
-    expected.get(21).put(22, 23);
-    expected.get(21).put(24, 25);
 
     System.out.println("Expected: ");
     System.out.println(expected);
