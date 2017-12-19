@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +15,7 @@ import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Type;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.DescriptorValidationException;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.ProtobufMap;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MapEntry.MapDescriptors;
 import com.google.protobuf.WireFormat.FieldType;
@@ -54,6 +54,7 @@ public class NestedMapFieldTest {
       Assert.assertEquals(demo.getUrl(), demo2.getUrl());
       Assert.assertEquals(demo.getSnippetsList(), demo2.getSnippetsList());
       Assert.assertEquals(demo.getMetadataMap(), demo2.getMetadataMap());
+      Assert.assertEquals(demo, demo2);
     } finally {
       is.close();
     }
@@ -89,6 +90,7 @@ public class NestedMapFieldTest {
       Assert.assertEquals(demo.getUrl(), demo2.getUrl());
       Assert.assertEquals(demo.getSnippetsList(), demo2.getSnippetsList());
       Assert.assertEquals(demo.getMetadataMap(), demo2.getMetadataMap());
+      Assert.assertEquals(demo, demo2);
     } finally {
       is.close();
     }
@@ -123,6 +125,7 @@ public class NestedMapFieldTest {
       Assert.assertEquals(demo.getUrl(), demo2.getUrl());
       Assert.assertEquals(demo.getSnippetsList(), demo2.getSnippetsList());
       Assert.assertEquals(demo.getMetadataMap(), demo2.getMetadataMap());
+      Assert.assertEquals(demo, demo2);
     } finally {
       is.close();
     }
@@ -161,20 +164,71 @@ public class NestedMapFieldTest {
     Type type = MapDescriptors.toType(FieldType.BOOL);
     Assert.assertEquals(Type.TYPE_BOOL, type);
   }
-  
+
   @Test
   public void dotnetInput() throws IOException {
     String inputPath = "/home/koqizhao/Downloads/demo.bin";
     File file = new File(inputPath);
     FileInputStream is = null;
+    NestedMapDemo demo;
     try {
       is = new FileInputStream(file);
-      DemoOuterClass.Demo demo = DemoOuterClass.Demo.parseFrom(is);
-      System.out.println(demo);
+      demo = NestedMapDemo.parseFrom(is);
     } finally {
       if (is != null)
         is.close();
     }
+
+    Map<String, String> nestedMapValue = new HashMap<String, String>();
+    nestedMapValue.put("k1", "v1");
+    nestedMapValue.put("k2", "v2");
+    NestedMapDemo expected = NestedMapDemo.newBuilder().setUrl("http://www.ctrip.com").setTitle("test")
+        .addSnippets("t1").addSnippets("t2").putMetadata(1, nestedMapValue).build();
+
+    System.out.println("Expected: ");
+    System.out.println(expected);
+    System.out.println();
+
+    System.out.println("Actual: ");
+    System.out.println(demo);
+    System.out.println();
+
+    Assert.assertEquals(expected, demo);
+  }
+
+  @Test
+  public void genericMapOf3Int() throws IOException {
+    ProtobufMap<Integer, Map<Integer, Integer>> genericMap = new ProtobufMap<Integer, Map<Integer, Integer>>(
+        FieldType.INT32, 0, FieldType.INT32, FieldType.INT32);
+
+    String inputPath = "/home/koqizhao/Downloads/mapOf3Int.bin";
+    File file = new File(inputPath);
+    FileInputStream is = null;
+    try {
+      is = new FileInputStream(file);
+      genericMap.read(is);
+    } finally {
+      if (is != null)
+        is.close();
+    }
+
+    Map<Integer, Map<Integer, Integer>> expected = new HashMap<Integer, Map<Integer, Integer>>();
+    expected.put(11, new HashMap<Integer, Integer>());
+    expected.get(11).put(12, 13);
+
+    expected.put(21, new HashMap<Integer, Integer>());
+    expected.get(21).put(22, 23);
+    expected.get(21).put(24, 25);
+
+    System.out.println("Expected: ");
+    System.out.println(expected);
+    System.out.println();
+
+    System.out.println("Actual: ");
+    System.out.println(genericMap.getMap());
+    System.out.println();
+
+    Assert.assertEquals(expected, genericMap.getMap());
   }
 
 }
