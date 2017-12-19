@@ -27,15 +27,17 @@ public class ProtobufMap<K, V> {
     _mapField = MapField.newMapField(defaultEntry);
   }
 
-  public void write(OutputStream stream) throws IOException {
+  public void writeTo(OutputStream stream) throws IOException {
     CodedOutputStream codedOutputStream = CodedOutputStream.newInstance(stream);
     for (Map.Entry<K, V> entry : getMap().entrySet()) {
       MapEntry mapEntry = _defaultEntry.newBuilderForType().setKey(entry.getKey()).setValue(entry.getValue()).build();
       codedOutputStream.writeMessage(1, mapEntry);
     }
+
+    codedOutputStream.flush();
   }
 
-  public void read(InputStream stream) throws IOException {
+  public void parseFrom(InputStream stream) throws IOException {
     clear();
 
     try {

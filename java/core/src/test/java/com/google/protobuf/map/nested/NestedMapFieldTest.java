@@ -2,9 +2,8 @@ package com.google.protobuf.map.nested;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,7 +29,7 @@ import com.google.protobuf.map.nested.NestedMapDemoOuterClass.NestedMapDemo;
 public class NestedMapFieldTest {
 
   @Test
-  public void NormalDemoObjTest() throws IOException {
+  public void normalDemoObjTest() throws IOException {
     Demo demo = Demo.newBuilder().setTitle("ok").setUrl("http://test").addSnippets("ok").putMetadata(1, "o2").build();
     System.out.println(demo);
     byte[] bytes = null;
@@ -61,7 +60,7 @@ public class NestedMapFieldTest {
   }
 
   @Test
-  public void NestedMapDemoObjTest() throws IOException {
+  public void nestedMapDemoObjTest() throws IOException {
     Map<String, String> mapValue = new HashMap<String, String>();
     mapValue.put("ok1", "ok1_value");
     mapValue.put("ok2", "ok2_value");
@@ -97,7 +96,7 @@ public class NestedMapFieldTest {
   }
 
   @Test
-  public void NestedMapDemoObjTest2() throws IOException {
+  public void nestedMapDemoObjTest2() throws IOException {
     Map<String, Integer> mapValue = new HashMap<String, Integer>();
     mapValue.put("ok1", 1);
     mapValue.put("ok2", 2);
@@ -132,6 +131,113 @@ public class NestedMapFieldTest {
   }
 
   @Test
+  public void protobufMapTest() throws IOException {
+    Map<Integer, Map<Integer, Integer>> expected = new HashMap<Integer, Map<Integer, Integer>>();
+    expected.put(11, new HashMap<Integer, Integer>());
+    expected.get(11).put(12, 13);
+
+    expected.put(21, new HashMap<Integer, Integer>());
+    expected.get(21).put(22, 23);
+    expected.get(21).put(24, 25);
+
+    ProtobufMap<Integer, Map<Integer, Integer>> genericMap = new ProtobufMap<Integer, Map<Integer, Integer>>(
+        FieldType.INT32, 0, FieldType.INT32, FieldType.INT32);
+    genericMap.setMap(expected);
+
+    byte[] bytes = null;
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    try {
+      genericMap.writeTo(os);
+      bytes = os.toByteArray();
+      System.out.println("bytes length: " + bytes.length);
+    } finally {
+      os.close();
+    }
+
+    genericMap.clear();
+
+    System.out.println();
+    ByteArrayInputStream is = new ByteArrayInputStream(bytes);
+    try {
+      genericMap.parseFrom(is);
+    } finally {
+      is.close();
+    }
+
+    System.out.println("Expected: ");
+    System.out.println(expected);
+    System.out.println();
+
+    System.out.println("Actual: ");
+    System.out.println(genericMap.getMap());
+    System.out.println();
+
+    Assert.assertEquals(expected, genericMap.getMap());
+  }
+
+  @Test
+  public void nestedMapDemoObjTestForDotnetInput() throws IOException {
+    InputStream is = null;
+    NestedMapDemo demo;
+    try {
+      is = NestedMapFieldTest.class.getResourceAsStream("demo.bin");
+      demo = NestedMapDemo.parseFrom(is);
+    } finally {
+      if (is != null)
+        is.close();
+    }
+
+    Map<String, String> nestedMapValue = new HashMap<String, String>();
+    nestedMapValue.put("k1", "v1");
+    nestedMapValue.put("k2", "v2");
+    NestedMapDemo expected = NestedMapDemo.newBuilder().setUrl("http://www.ctrip.com").setTitle("test")
+        .addSnippets("t1").addSnippets("t2").putMetadata(1, nestedMapValue).build();
+
+    System.out.println("Expected: ");
+    System.out.println(expected);
+    System.out.println();
+
+    System.out.println("Actual: ");
+    System.out.println(demo);
+    System.out.println();
+
+    Assert.assertEquals(expected, demo);
+  }
+
+  @Test
+  public void protobufMapTestForDotnetInput() throws IOException {
+    ProtobufMap<Integer, Map<Integer, Integer>> genericMap = new ProtobufMap<Integer, Map<Integer, Integer>>(
+        FieldType.INT32, 0, FieldType.INT32, FieldType.INT32);
+
+    InputStream is = null;
+    try {
+      is = NestedMapFieldTest.class.getResourceAsStream("mapOf3Int.bin");
+      genericMap.parseFrom(is);
+    } finally {
+      if (is != null)
+        is.close();
+    }
+
+    Map<Integer, Map<Integer, Integer>> expected = new HashMap<Integer, Map<Integer, Integer>>();
+    expected.put(11, new HashMap<Integer, Integer>());
+    expected.get(11).put(12, 13);
+
+    expected.put(21, new HashMap<Integer, Integer>());
+    expected.get(21).put(22, 23);
+    expected.get(21).put(24, 25);
+
+    System.out.println("Expected: ");
+    System.out.println(expected);
+    System.out.println();
+
+    System.out.println("Actual: ");
+    System.out.println(genericMap.getMap());
+    System.out.println();
+
+    Assert.assertEquals(expected, genericMap.getMap());
+  }
+
+  @Test
   public void customFieldType() throws InvalidProtocolBufferException, DescriptorValidationException {
     testMapDescriptor(FieldType.BOOL, null);
     testMapDescriptor(FieldType.BOOL, FieldType.STRING);
@@ -163,72 +269,6 @@ public class NestedMapFieldTest {
   public void testToType() {
     Type type = MapDescriptors.toType(FieldType.BOOL);
     Assert.assertEquals(Type.TYPE_BOOL, type);
-  }
-
-  @Test
-  public void dotnetInput() throws IOException {
-    String inputPath = "/home/koqizhao/Downloads/demo.bin";
-    File file = new File(inputPath);
-    FileInputStream is = null;
-    NestedMapDemo demo;
-    try {
-      is = new FileInputStream(file);
-      demo = NestedMapDemo.parseFrom(is);
-    } finally {
-      if (is != null)
-        is.close();
-    }
-
-    Map<String, String> nestedMapValue = new HashMap<String, String>();
-    nestedMapValue.put("k1", "v1");
-    nestedMapValue.put("k2", "v2");
-    NestedMapDemo expected = NestedMapDemo.newBuilder().setUrl("http://www.ctrip.com").setTitle("test")
-        .addSnippets("t1").addSnippets("t2").putMetadata(1, nestedMapValue).build();
-
-    System.out.println("Expected: ");
-    System.out.println(expected);
-    System.out.println();
-
-    System.out.println("Actual: ");
-    System.out.println(demo);
-    System.out.println();
-
-    Assert.assertEquals(expected, demo);
-  }
-
-  @Test
-  public void genericMapOf3Int() throws IOException {
-    ProtobufMap<Integer, Map<Integer, Integer>> genericMap = new ProtobufMap<Integer, Map<Integer, Integer>>(
-        FieldType.INT32, 0, FieldType.INT32, FieldType.INT32);
-
-    String inputPath = "/home/koqizhao/Downloads/mapOf3Int.bin";
-    File file = new File(inputPath);
-    FileInputStream is = null;
-    try {
-      is = new FileInputStream(file);
-      genericMap.read(is);
-    } finally {
-      if (is != null)
-        is.close();
-    }
-
-    Map<Integer, Map<Integer, Integer>> expected = new HashMap<Integer, Map<Integer, Integer>>();
-    expected.put(11, new HashMap<Integer, Integer>());
-    expected.get(11).put(12, 13);
-
-    expected.put(21, new HashMap<Integer, Integer>());
-    expected.get(21).put(22, 23);
-    expected.get(21).put(24, 25);
-
-    System.out.println("Expected: ");
-    System.out.println(expected);
-    System.out.println();
-
-    System.out.println("Actual: ");
-    System.out.println(genericMap.getMap());
-    System.out.println();
-
-    Assert.assertEquals(expected, genericMap.getMap());
   }
 
 }
