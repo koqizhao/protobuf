@@ -19,11 +19,11 @@ public final class NestedMapDemo3 {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>map&lt;int32, int32&gt; metadata = 4;</code>
+     * <code>map&lt;int32, int32&gt; metadata = 1;</code>
      */
     int getMetadataCount();
     /**
-     * <code>map&lt;int32, int32&gt; metadata = 4;</code>
+     * <code>map&lt;int32, int32&gt; metadata = 1;</code>
      */
     boolean containsMetadata(
         int key);
@@ -34,19 +34,19 @@ public final class NestedMapDemo3 {
     java.util.Map<java.lang.Integer, java.util.Map<java.lang.Integer, java.lang.Integer>>
     getMetadata();
     /**
-     * <code>map&lt;int32, int32&gt; metadata = 4;</code>
+     * <code>map&lt;int32, int32&gt; metadata = 1;</code>
      */
     java.util.Map<java.lang.Integer, java.util.Map<java.lang.Integer, java.lang.Integer>>
     getMetadataMap();
     /**
-     * <code>map&lt;int32, int32&gt; metadata = 4;</code>
+     * <code>map&lt;int32, int32&gt; metadata = 1;</code>
      */
 
     java.util.Map<java.lang.Integer, java.lang.Integer> getMetadataOrDefault(
         int key,
         java.util.Map<java.lang.Integer, java.lang.Integer> defaultValue);
     /**
-     * <code>map&lt;int32, int32&gt; metadata = 4;</code>
+     * <code>map&lt;int32, int32&gt; metadata = 1;</code>
      */
 
     java.util.Map<java.lang.Integer, java.lang.Integer> getMetadataOrThrow(
@@ -94,7 +94,7 @@ public final class NestedMapDemo3 {
               }
               break;
             }
-            case 34: {
+            case 10: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
                 metadata_ = com.google.protobuf.MapField.newMapField(
                     MetadataDefaultEntryHolder.defaultEntry);
@@ -127,7 +127,7 @@ public final class NestedMapDemo3 {
     protected com.google.protobuf.MapField internalGetMapField(
         int number) {
       switch (number) {
-        case 4:
+        case 1:
           return internalGetMetadata();
         default:
           throw new RuntimeException(
@@ -141,7 +141,7 @@ public final class NestedMapDemo3 {
               com.google.protobuf.map.nested.NestedMapDemo3.NestedMapDemo.class, com.google.protobuf.map.nested.NestedMapDemo3.NestedMapDemo.Builder.class);
     }
 
-    public static final int METADATA_FIELD_NUMBER = 4;
+    public static final int METADATA_FIELD_NUMBER = 1;
     private static final class MetadataDefaultEntryHolder {
       static final com.google.protobuf.MapEntry<
           java.lang.Integer, com.google.protobuf.MapEntry<java.lang.Integer, java.lang.Integer>>
@@ -170,7 +170,7 @@ public final class NestedMapDemo3 {
       return internalGetMetadata().getMap().size();
     }
     /**
-     * <code>map&lt;int32, int32&gt; metadata = 4;</code>
+     * <code>map&lt;int32, int32&gt; metadata = 1;</code>
      */
 
     public boolean containsMetadata(
@@ -186,14 +186,14 @@ public final class NestedMapDemo3 {
       return getMetadataMap();
     }
     /**
-     * <code>map&lt;int32, int32&gt; metadata = 4;</code>
+     * <code>map&lt;int32, int32&gt; metadata = 1;</code>
      */
 
     public java.util.Map<java.lang.Integer, java.util.Map<java.lang.Integer, java.lang.Integer>> getMetadataMap() {
       return internalGetMetadata().getMap();
     }
     /**
-     * <code>map&lt;int32, int32&gt; metadata = 4;</code>
+     * <code>map&lt;int32, int32&gt; metadata = 1;</code>
      */
 
     public java.util.Map<java.lang.Integer, java.lang.Integer> getMetadataOrDefault(
@@ -205,7 +205,7 @@ public final class NestedMapDemo3 {
       return map.containsKey(key) ? map.get(key) : defaultValue;
     }
     /**
-     * <code>map&lt;int32, int32&gt; metadata = 4;</code>
+     * <code>map&lt;int32, int32&gt; metadata = 1;</code>
      */
 
     public java.util.Map<java.lang.Integer, java.lang.Integer> getMetadataOrThrow(
@@ -238,7 +238,7 @@ public final class NestedMapDemo3 {
             .setKey(entry.getKey())
             .setValue(entry.getValue())
             .build();
-        output.writeMessage(4, metadata);
+        output.writeMessage(1, metadata);
       }
       unknownFields.writeTo(output);
     }
@@ -256,7 +256,7 @@ public final class NestedMapDemo3 {
             .setValue(entry.getValue())
             .build();
         size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(4, metadata);
+            .computeMessageSize(1, metadata);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -390,7 +390,7 @@ public final class NestedMapDemo3 {
       protected com.google.protobuf.MapField internalGetMapField(
           int number) {
         switch (number) {
-          case 4:
+          case 1:
             return internalGetMetadata();
           default:
             throw new RuntimeException(
@@ -401,7 +401,7 @@ public final class NestedMapDemo3 {
       protected com.google.protobuf.MapField internalGetMutableMapField(
           int number) {
         switch (number) {
-          case 4:
+          case 1:
             return internalGetMutableMetadata();
           default:
             throw new RuntimeException(
@@ -555,7 +555,7 @@ public final class NestedMapDemo3 {
         return internalGetMetadata().getMap().size();
       }
       /**
-       * <code>map&lt;int32, int32&gt; metadata = 4;</code>
+       * <code>map&lt;int32, int32&gt; metadata = 1;</code>
        */
 
       public boolean containsMetadata(
@@ -571,14 +571,14 @@ public final class NestedMapDemo3 {
         return getMetadataMap();
       }
       /**
-       * <code>map&lt;int32, int32&gt; metadata = 4;</code>
+       * <code>map&lt;int32, int32&gt; metadata = 1;</code>
        */
 
       public java.util.Map<java.lang.Integer, java.util.Map<java.lang.Integer, java.lang.Integer>> getMetadataMap() {
         return internalGetMetadata().getMap();
       }
       /**
-       * <code>map&lt;int32, int32&gt; metadata = 4;</code>
+       * <code>map&lt;int32, int32&gt; metadata = 1;</code>
        */
 
       public java.util.Map<java.lang.Integer, java.lang.Integer> getMetadataOrDefault(
@@ -590,7 +590,7 @@ public final class NestedMapDemo3 {
         return map.containsKey(key) ? map.get(key) : defaultValue;
       }
       /**
-       * <code>map&lt;int32, int32&gt; metadata = 4;</code>
+       * <code>map&lt;int32, int32&gt; metadata = 1;</code>
        */
 
       public java.util.Map<java.lang.Integer, java.lang.Integer> getMetadataOrThrow(
@@ -609,7 +609,7 @@ public final class NestedMapDemo3 {
         return this;
       }
       /**
-       * <code>map&lt;int32, int32&gt; metadata = 4;</code>
+       * <code>map&lt;int32, int32&gt; metadata = 1;</code>
        */
 
       public Builder removeMetadata(
@@ -627,7 +627,7 @@ public final class NestedMapDemo3 {
         return internalGetMutableMetadata().getMutableMap();
       }
       /**
-       * <code>map&lt;int32, int32&gt; metadata = 4;</code>
+       * <code>map&lt;int32, int32&gt; metadata = 1;</code>
        */
       public Builder putMetadata(
           int key,
@@ -638,7 +638,7 @@ public final class NestedMapDemo3 {
         return this;
       }
       /**
-       * <code>map&lt;int32, int32&gt; metadata = 4;</code>
+       * <code>map&lt;int32, int32&gt; metadata = 1;</code>
        */
 
       public Builder putAllMetadata(
@@ -720,7 +720,7 @@ public final class NestedMapDemo3 {
   static {
     java.lang.String[] descriptorData = {
       "\n\024NestedMapDemo3.proto\"\224\001\n\rNestedMapDemo" +
-      "\022.\n\010metadata\030\004 \003(\0132\034.NestedMapDemo.Metad" +
+      "\022.\n\010metadata\030\001 \003(\0132\034.NestedMapDemo.Metad" +
       "ataEntry\032S\n\rMetadataEntry\022\013\n\003key\030\001 \001(\005\022\r" +
       "\n\005value\030\002 \001(\005\032\"\n\022MapEntryNestedKeys\022\014\n\004k" +
       "ey1\030\001 \001(\005:\0028\001B \n\036com.google.protobuf.map" +
