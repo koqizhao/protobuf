@@ -220,26 +220,25 @@ public class NestedMapFieldTest {
     expected.get(21).put(22, 23);
     expected.get(21).put(24, 25);
 
-    ProtobufMap<Integer, Map<Integer, Integer>> genericMap = new ProtobufMap<Integer, Map<Integer, Integer>>(
-        FieldType.INT32, 0, FieldType.INT32, FieldType.INT32);
-    genericMap.setMap(expected);
+    ProtobufMap<Integer, Map<Integer, Integer>> genericMap = ProtobufMap.<Integer, Map<Integer, Integer>> newBuilder()
+        .keyTypes(FieldType.INT32, FieldType.INT32).valueType(FieldType.INT32).build();
 
     byte[] bytes = null;
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     try {
-      genericMap.writeTo(os);
+      genericMap.writeTo(os, expected);
       bytes = os.toByteArray();
       System.out.println("bytes length: " + bytes.length);
     } finally {
       os.close();
     }
 
-    genericMap.clear();
-
     System.out.println();
+
+    Map<Integer, Map<Integer, Integer>> actual;
     ByteArrayInputStream is = new ByteArrayInputStream(bytes);
     try {
-      genericMap.parseFrom(is);
+      actual = genericMap.parseFrom(is);
     } finally {
       is.close();
     }
@@ -249,10 +248,10 @@ public class NestedMapFieldTest {
     System.out.println();
 
     System.out.println("Actual: ");
-    System.out.println(genericMap.getMap());
+    System.out.println(actual);
     System.out.println();
 
-    Assert.assertEquals(expected, genericMap.getMap());
+    Assert.assertEquals(expected, actual);
   }
 
   @Test
@@ -265,14 +264,13 @@ public class NestedMapFieldTest {
     expected.get(21).put(22, 23);
     expected.get(21).put(24, 25);
 
-    ProtobufMap<Integer, Map<Integer, Integer>> genericMap = new ProtobufMap<Integer, Map<Integer, Integer>>(
-        FieldType.INT32, 0, FieldType.INT32, FieldType.INT32);
-    genericMap.setMap(expected);
+    ProtobufMap<Integer, Map<Integer, Integer>> genericMap = ProtobufMap.<Integer, Map<Integer, Integer>> newBuilder()
+        .keyTypes(FieldType.INT32, FieldType.INT32).valueType(FieldType.INT32).build();
 
     byte[] bytes = null;
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     try {
-      genericMap.writeTo(os);
+      genericMap.writeTo(os, expected);
       bytes = os.toByteArray();
       System.out.println("bytes length: " + bytes.length);
     } finally {
@@ -280,6 +278,7 @@ public class NestedMapFieldTest {
     }
 
     System.out.println();
+
     ByteArrayInputStream is = new ByteArrayInputStream(bytes);
     NestedMapDemo3.NestedMapDemo demo2;
     try {
@@ -340,13 +339,14 @@ public class NestedMapFieldTest {
     expected.get(21).put(22, 23);
     expected.get(21).put(24, 25);
 
-    ProtobufMap<Integer, Map<Integer, Integer>> genericMap = new ProtobufMap<Integer, Map<Integer, Integer>>(
-        FieldType.INT32, 0, FieldType.INT32, FieldType.INT32);
+    ProtobufMap<Integer, Map<Integer, Integer>> genericMap = ProtobufMap.<Integer, Map<Integer, Integer>> newBuilder()
+        .keyTypes(FieldType.INT32, FieldType.INT32).valueType(FieldType.INT32).build();
 
+    Map<Integer, Map<Integer, Integer>> actual;
     InputStream is = null;
     try {
       is = NestedMapFieldTest.class.getResourceAsStream("mapOf3Int.bin");
-      genericMap.parseFrom(is);
+      actual = genericMap.parseFrom(is);
     } finally {
       if (is != null)
         is.close();
@@ -357,10 +357,10 @@ public class NestedMapFieldTest {
     System.out.println();
 
     System.out.println("Actual: ");
-    System.out.println(genericMap.getMap());
+    System.out.println(actual);
     System.out.println();
 
-    Assert.assertEquals(expected, genericMap.getMap());
+    Assert.assertEquals(expected, actual);
   }
 
   @Test
