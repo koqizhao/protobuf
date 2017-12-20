@@ -14,7 +14,7 @@ import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Type;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.DescriptorValidationException;
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.google.protobuf.ProtobufMap;
+import com.google.protobuf.ProtobufMapSerializer;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MapEntry.MapDescriptors;
 import com.google.protobuf.WireFormat.FieldType;
@@ -220,13 +220,14 @@ public class NestedMapFieldTest {
     expected.get(21).put(22, 23);
     expected.get(21).put(24, 25);
 
-    ProtobufMap<Integer, Map<Integer, Integer>> genericMap = ProtobufMap.<Integer, Map<Integer, Integer>> newBuilder()
-        .keyTypes(FieldType.INT32, FieldType.INT32).valueType(FieldType.INT32).build();
+    ProtobufMapSerializer<Integer, Map<Integer, Integer>> serializer = ProtobufMapSerializer
+        .<Integer, Map<Integer, Integer>> newBuilder().keyTypes(FieldType.INT32, FieldType.INT32)
+        .valueType(FieldType.INT32).build();
 
     byte[] bytes = null;
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     try {
-      genericMap.writeTo(os, expected);
+      serializer.serialize(os, expected);
       bytes = os.toByteArray();
       System.out.println("bytes length: " + bytes.length);
     } finally {
@@ -238,7 +239,7 @@ public class NestedMapFieldTest {
     Map<Integer, Map<Integer, Integer>> actual;
     ByteArrayInputStream is = new ByteArrayInputStream(bytes);
     try {
-      actual = genericMap.parseFrom(is);
+      actual = serializer.deserialize(is);
     } finally {
       is.close();
     }
@@ -264,13 +265,14 @@ public class NestedMapFieldTest {
     expected.get(21).put(22, 23);
     expected.get(21).put(24, 25);
 
-    ProtobufMap<Integer, Map<Integer, Integer>> genericMap = ProtobufMap.<Integer, Map<Integer, Integer>> newBuilder()
-        .keyTypes(FieldType.INT32, FieldType.INT32).valueType(FieldType.INT32).build();
+    ProtobufMapSerializer<Integer, Map<Integer, Integer>> serializer = ProtobufMapSerializer
+        .<Integer, Map<Integer, Integer>> newBuilder().keyTypes(FieldType.INT32, FieldType.INT32)
+        .valueType(FieldType.INT32).build();
 
     byte[] bytes = null;
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     try {
-      genericMap.writeTo(os, expected);
+      serializer.serialize(os, expected);
       bytes = os.toByteArray();
       System.out.println("bytes length: " + bytes.length);
     } finally {
@@ -339,14 +341,15 @@ public class NestedMapFieldTest {
     expected.get(21).put(22, 23);
     expected.get(21).put(24, 25);
 
-    ProtobufMap<Integer, Map<Integer, Integer>> genericMap = ProtobufMap.<Integer, Map<Integer, Integer>> newBuilder()
-        .keyTypes(FieldType.INT32, FieldType.INT32).valueType(FieldType.INT32).build();
+    ProtobufMapSerializer<Integer, Map<Integer, Integer>> serializer = ProtobufMapSerializer
+        .<Integer, Map<Integer, Integer>> newBuilder().keyTypes(FieldType.INT32, FieldType.INT32)
+        .valueType(FieldType.INT32).build();
 
     Map<Integer, Map<Integer, Integer>> actual;
     InputStream is = null;
     try {
       is = NestedMapFieldTest.class.getResourceAsStream("mapOf3Int.bin");
-      actual = genericMap.parseFrom(is);
+      actual = serializer.deserialize(is);
     } finally {
       if (is != null)
         is.close();

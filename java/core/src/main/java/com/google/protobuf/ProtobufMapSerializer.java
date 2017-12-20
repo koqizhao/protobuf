@@ -16,16 +16,35 @@ import com.google.protobuf.WireFormat.FieldType;
  *         Dec 19, 2017
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class ProtobufMap<K, V> {
+public class ProtobufMapSerializer<K, V> {
 
   private MapEntry _defaultEntry;
 
-  protected ProtobufMap(MapEntry defaultEntry) {
+  protected ProtobufMapSerializer(MapEntry defaultEntry) {
     _defaultEntry = defaultEntry;
   }
 
-  public void writeTo(OutputStream stream, Map<K, V> map) throws IOException {
+  public void serialize(OutputStream stream, Map<K, V> map) throws IOException {
     CodedOutputStream codedOutputStream = CodedOutputStream.newInstance(stream);
+    serialize(codedOutputStream, map);
+  }
+
+  public Map<K, V> deserialize(InputStream stream) throws IOException {
+    CodedInputStream codedInputStream = CodedInputStream.newInstance(stream);
+    return deserialize(codedInputStream);
+  }
+
+  public void serialize(byte[] bytes, Map<K, V> map) throws IOException {
+    CodedOutputStream codedOutputStream = CodedOutputStream.newInstance(bytes);
+    serialize(codedOutputStream, map);
+  }
+
+  public Map<K, V> deserialize(byte[] bytes) throws IOException {
+    CodedInputStream codedInputStream = CodedInputStream.newInstance(bytes);
+    return deserialize(codedInputStream);
+  }
+
+  public void serialize(CodedOutputStream codedOutputStream, Map<K, V> map) throws IOException {
     for (Map.Entry entry : map.entrySet()) {
       MapEntry mapEntry = _defaultEntry.newBuilderForType().setKey(entry.getKey()).setValue(entry.getValue()).build();
       codedOutputStream.writeMessage(1, mapEntry);
@@ -34,12 +53,11 @@ public class ProtobufMap<K, V> {
     codedOutputStream.flush();
   }
 
-  public Map<K, V> parseFrom(InputStream stream) throws IOException {
+  public Map<K, V> deserialize(CodedInputStream codedInputStream) throws IOException {
     try {
-      CodedInputStream codedOutStream = CodedInputStream.newInstance(stream);
       Map map = null;
       while (true) {
-        int tag = codedOutStream.readTag();
+        int tag = codedInputStream.readTag();
         if (tag == 0)
           break;
 
@@ -47,7 +65,7 @@ public class ProtobufMap<K, V> {
           if (map == null)
             map = new HashMap();
 
-          MapEntry mapEntry = (MapEntry) codedOutStream.readMessage(_defaultEntry.getParserForType(),
+          MapEntry mapEntry = (MapEntry) codedInputStream.readMessage(_defaultEntry.getParserForType(),
               ExtensionRegistryLite.getEmptyRegistry());
           map.put(mapEntry.getKey(), mapEntry.getRealValue());
         }
@@ -111,9 +129,9 @@ public class ProtobufMap<K, V> {
       return this;
     }
 
-    public ProtobufMap<K, V> build() {
+    public ProtobufMapSerializer<K, V> build() {
       MapEntry defaultEntry = buildDefaultEntry();
-      return new ProtobufMap<K, V>(defaultEntry);
+      return new ProtobufMapSerializer<K, V>(defaultEntry);
     }
 
     protected MapEntry buildDefaultEntry() {
