@@ -89,7 +89,7 @@ public class ProtobufMapSerializer<K, V> {
     private FieldType _valueType;
     private Object _valueDefault;
 
-    private Builder() {
+    protected Builder() {
       _keyTypes = new ArrayList<FieldType>();
     }
 
@@ -160,51 +160,52 @@ public class ProtobufMapSerializer<K, V> {
     }
   }
 
-  public static Object defaultValue(FieldType fieldType) {
+  private static Object defaultValue(FieldType fieldType) {
     switch (fieldType) {
       case BOOL:
         return false;
-      case INT64:
-      case UINT64:
-      case FIXED64:
-      case SFIXED64:
-      case SINT64:
+      case STRING:
+        return "";
       case INT32:
       case FIXED32:
       case UINT32:
       case SFIXED32:
       case SINT32:
+      case INT64:
+      case UINT64:
+      case FIXED64:
+      case SFIXED64:
+      case SINT64:
         return 0;
       case DOUBLE:
       case FLOAT:
         return 0.0;
-      case STRING:
-        return "";
       default:
         return null;
     }
   }
 
-  public static boolean isSupportedKeyType(FieldType fieldType) {
+  protected static boolean isSupportedKeyType(FieldType fieldType) {
     switch (fieldType) {
       case BOOL:
-      case INT64:
-      case UINT64:
-      case FIXED64:
-      case SFIXED64:
-      case SINT64:
+      case STRING:
       case INT32:
       case FIXED32:
       case UINT32:
       case SFIXED32:
       case SINT32:
+      case INT64:
+      case UINT64:
+      case FIXED64:
+      case SFIXED64:
+      case SINT64:
         return true;
       default:
         return false;
     }
   }
 
-  public static boolean isSupportedValueType(FieldType fieldType) {
+  protected static boolean isSupportedValueType(FieldType fieldType) {
     switch (fieldType) {
       case GROUP:
         return false;
