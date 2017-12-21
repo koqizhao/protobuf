@@ -79,7 +79,7 @@ public class UserGuide {
     // Notice:
     // the Builder has another method:
     //    valueDefault(Object valueDefault)
-    // if valueType is Enum nor Message, valueDefault method must be invoked
+    // if valueType is Enum or Message, valueDefault method must be invoked
 
     // serialization
     byte[] bytes = null;
