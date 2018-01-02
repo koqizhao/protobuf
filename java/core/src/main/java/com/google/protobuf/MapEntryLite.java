@@ -199,14 +199,16 @@ public class MapEntryLite<K, V> {
     K key = metadata.defaultKey;
     V value = metadata.defaultValue;
     List<V> values = null;
+    int keyTag = WireFormat.makeTag(KEY_FIELD_NUMBER, metadata.keyType.getWireType());
+    int valueTag = WireFormat.makeTag(VALUE_FIELD_NUMBER, metadata.valueType.getWireType());
     while (true) {
       int tag = input.readTag();
       if (tag == 0) {
         break;
       }
-      if (tag == WireFormat.makeTag(KEY_FIELD_NUMBER, metadata.keyType.getWireType())) {
+      if (tag == keyTag) {
         key = parseField(input, extensionRegistry, metadata.keyType, metadata.defaultKey);
-      } else if (tag == WireFormat.makeTag(VALUE_FIELD_NUMBER, metadata.valueType.getWireType())) {
+      } else if (tag == valueTag) {
         if (metadata.isNested) {
           value = parseField(input, extensionRegistry, metadata.valueType, metadata.defaultValue);
           if (values == null)
@@ -235,15 +237,16 @@ public class MapEntryLite<K, V> {
     final int oldLimit = input.pushLimit(length);
     K key = metadata.defaultKey;
     V value = metadata.defaultValue;
-
+    int keyTag = WireFormat.makeTag(KEY_FIELD_NUMBER, metadata.keyType.getWireType());
+    int valueTag = WireFormat.makeTag(VALUE_FIELD_NUMBER, metadata.valueType.getWireType());
     while (true) {
       int tag = input.readTag();
       if (tag == 0) {
         break;
       }
-      if (tag == WireFormat.makeTag(KEY_FIELD_NUMBER, metadata.keyType.getWireType())) {
+      if (tag == keyTag) {
         key = parseField(input, extensionRegistry, metadata.keyType, metadata.defaultKey);
-      } else if (tag == WireFormat.makeTag(VALUE_FIELD_NUMBER, metadata.valueType.getWireType())) {
+      } else if (tag == valueTag) {
         value = parseField(input, extensionRegistry, metadata.valueType, metadata.defaultValue);
       } else {
         if (!input.skipField(tag)) {
