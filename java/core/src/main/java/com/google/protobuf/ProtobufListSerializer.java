@@ -16,12 +16,16 @@ import com.google.protobuf.WireFormat.FieldType;
 @SuppressWarnings("unchecked")
 public class ProtobufListSerializer<V> {
 
+  protected static final int FIELD_NUMBER = 1;
+
   private FieldType _valueType;
   private V _valueDefault;
+  private int _valueTag;
 
   protected ProtobufListSerializer(FieldType valueType, V valueDefault) {
     _valueType = valueType;
     _valueDefault = valueDefault;
+    _valueTag = WireFormat.makeTag(FIELD_NUMBER, _valueType.getWireType());
   }
 
   public void serialize(OutputStream stream, List<V> list) throws IOException {
@@ -46,7 +50,7 @@ public class ProtobufListSerializer<V> {
 
   public void serialize(CodedOutputStream codedOutputStream, List<V> list) throws IOException {
     for (V entry : list) {
-      FieldSet.writeElement(codedOutputStream, _valueType, 1, entry);
+      FieldSet.writeElement(codedOutputStream, _valueType, FIELD_NUMBER, entry);
     }
 
     codedOutputStream.flush();
@@ -60,7 +64,7 @@ public class ProtobufListSerializer<V> {
         if (tag == 0)
           break;
 
-        if (tag == 10) {
+        if (tag == _valueTag) {
           if (list == null)
             list = new ArrayList<V>();
 
@@ -73,7 +77,9 @@ public class ProtobufListSerializer<V> {
         throw new InvalidProtocolBufferException("No list data in the stream.");
 
       return list;
-    } catch (java.io.IOException e) {
+    } catch (InvalidProtocolBufferException e) {
+      throw e;
+    } catch (IOException e) {
       throw new InvalidProtocolBufferException(e);
     }
   }

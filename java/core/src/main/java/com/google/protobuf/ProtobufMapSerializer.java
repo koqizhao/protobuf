@@ -18,6 +18,9 @@ import com.google.protobuf.WireFormat.FieldType;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class ProtobufMapSerializer<K, V> {
 
+  protected static final int FIELD_NUMBER = 1;
+  protected static final int ENTRY_TAG = WireFormat.makeTag(FIELD_NUMBER, FieldType.MESSAGE.getWireType());
+
   private MapEntry _defaultEntry;
 
   protected ProtobufMapSerializer(MapEntry defaultEntry) {
@@ -47,7 +50,7 @@ public class ProtobufMapSerializer<K, V> {
   public void serialize(CodedOutputStream codedOutputStream, Map<K, V> map) throws IOException {
     for (Map.Entry entry : map.entrySet()) {
       MapEntry mapEntry = _defaultEntry.newBuilderForType().setKey(entry.getKey()).setValue(entry.getValue()).build();
-      codedOutputStream.writeMessage(1, mapEntry);
+      codedOutputStream.writeMessage(FIELD_NUMBER, mapEntry);
     }
 
     codedOutputStream.flush();
@@ -61,7 +64,7 @@ public class ProtobufMapSerializer<K, V> {
         if (tag == 0)
           break;
 
-        if (tag == 10) {
+        if (tag == ENTRY_TAG) {
           if (map == null)
             map = new HashMap();
 
@@ -75,7 +78,9 @@ public class ProtobufMapSerializer<K, V> {
         throw new InvalidProtocolBufferException("No map data in the stream.");
 
       return map;
-    } catch (java.io.IOException e) {
+    } catch (InvalidProtocolBufferException e) {
+      throw e;
+    } catch (IOException e) {
       throw new InvalidProtocolBufferException(e);
     }
   }
