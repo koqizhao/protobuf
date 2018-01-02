@@ -1,4 +1,4 @@
-package com.google.protobuf.map.nested;
+package com.google.protobuf.list;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -18,8 +18,8 @@ import com.google.protobuf.ProtobufMapSerializer;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MapEntry.MapDescriptors;
 import com.google.protobuf.WireFormat.FieldType;
-import com.google.protobuf.map.nested.DemoOuterClass.Demo;
-import com.google.protobuf.map.nested.NestedMapDemoOuterClass.NestedMapDemo;
+import com.google.protobuf.list.DemoOuterClass.Demo;
+import com.google.protobuf.list.NestedMapDemoOuterClass.NestedMapDemo;
 
 /**
  * @author koqizhao

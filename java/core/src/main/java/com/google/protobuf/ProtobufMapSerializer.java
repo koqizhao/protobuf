@@ -101,7 +101,7 @@ public class ProtobufMapSerializer<K, V> {
         if (fieldType == null)
           throw new NullPointerException("fieldType is null.");
 
-        if (!isSupportedKeyType(fieldType))
+        if (!SerializerUtil.isSupportedKeyType(fieldType))
           throw new UnsupportedOperationException(fieldType + " is not supported for protobuf map key");
 
         _keyTypes.add(fieldType);
@@ -114,7 +114,7 @@ public class ProtobufMapSerializer<K, V> {
       if (fieldType == null)
         throw new NullPointerException("fieldType is null.");
 
-      if (!isSupportedValueType(fieldType))
+      if (!SerializerUtil.isSupportedValueType(fieldType))
         throw new UnsupportedOperationException(fieldType + " is not supported for protobuf map value");
 
       _valueType = fieldType;
@@ -142,7 +142,7 @@ public class ProtobufMapSerializer<K, V> {
         throw new UnsupportedOperationException("valueType is not set.");
 
       if (_valueDefault == null)
-        _valueDefault = defaultValue(_valueType);
+        _valueDefault = SerializerUtil.defaultValue(_valueType);
 
       if (_valueDefault == null)
         throw new UnsupportedOperationException("valueType is " + _valueType + ", but valueDefault is not set.");
@@ -151,66 +151,15 @@ public class ProtobufMapSerializer<K, V> {
       for (int i = _keyTypes.size() - 1; i >= 0; i--) {
         FieldType keyType = _keyTypes.get(i);
         if (defaultEntry == null)
-          defaultEntry = MapEntry.newDefaultInstance(keyType, defaultValue(keyType), _valueType, _valueDefault);
+          defaultEntry = MapEntry.newDefaultInstance(keyType, SerializerUtil.defaultValue(keyType), _valueType,
+              _valueDefault);
         else
-          defaultEntry = MapEntry.newDefaultInstance(keyType, defaultValue(keyType), FieldType.MESSAGE, defaultEntry);
+          defaultEntry = MapEntry.newDefaultInstance(keyType, SerializerUtil.defaultValue(keyType), FieldType.MESSAGE,
+              defaultEntry);
       }
 
       return defaultEntry;
     }
   }
 
-  private static Object defaultValue(FieldType fieldType) {
-    switch (fieldType) {
-      case BOOL:
-        return false;
-      case STRING:
-        return "";
-      case INT32:
-      case FIXED32:
-      case UINT32:
-      case SFIXED32:
-      case SINT32:
-      case INT64:
-      case UINT64:
-      case FIXED64:
-      case SFIXED64:
-      case SINT64:
-        return 0;
-      case DOUBLE:
-      case FLOAT:
-        return 0.0;
-      default:
-        return null;
-    }
-  }
-
-  protected static boolean isSupportedKeyType(FieldType fieldType) {
-    switch (fieldType) {
-      case BOOL:
-      case STRING:
-      case INT32:
-      case FIXED32:
-      case UINT32:
-      case SFIXED32:
-      case SINT32:
-      case INT64:
-      case UINT64:
-      case FIXED64:
-      case SFIXED64:
-      case SINT64:
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  protected static boolean isSupportedValueType(FieldType fieldType) {
-    switch (fieldType) {
-      case GROUP:
-        return false;
-      default:
-        return true;
-    }
-  }
 }
