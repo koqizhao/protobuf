@@ -657,7 +657,7 @@ public final class NestedMapDemo4 {
                 com.google.protobuf.list.NestedMapDemo4.NestedMapDemo.class, com.google.protobuf.list.NestedMapDemo4.NestedMapDemo.Builder.class);
       }
 
-      // Construct using com.google.protobuf.map.nested.NestedMapDemo4.NestedMapDemo.newBuilder()
+      // Construct using com.google.protobuf.list.NestedMapDemo4.NestedMapDemo.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -1258,8 +1258,8 @@ public final class NestedMapDemo4 {
       "\022\020\n\010snippets\030\003 \003(\t\022.\n\010metadata\030\004 \003(\0132\034.N" +
       "estedMapDemo.MetadataEntry\032Z\n\rMetadataEn" +
       "try\022\013\n\003key\030\001 \001(\005\022\024\n\005value\030\002 \001(\0132\005.Demo\032\"" +
-      "\n\022MapEntryNestedKeys\022\014\n\004key1\030\001 \001(\t:\0028\001B " +
-      "\n\036com.google.protobuf.map.nested"
+      "\n\022MapEntryNestedKeys\022\014\n\004key1\030\001 \001(\t:\0028\001B\032" +
+      "\n\030com.google.protobuf.list"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {

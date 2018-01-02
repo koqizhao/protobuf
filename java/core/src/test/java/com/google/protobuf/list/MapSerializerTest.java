@@ -92,9 +92,10 @@ public class MapSerializerTest {
     System.out.println();
 
     ByteArrayInputStream is = new ByteArrayInputStream(bytes);
-    NestedMapDemo3.NestedMapDemo demo2;
+    Map<Integer, Map<Integer, Integer>> actual;
     try {
-      demo2 = NestedMapDemo3.NestedMapDemo.parseFrom(is);
+      NestedMapDemo3.NestedMapDemo demo2 = NestedMapDemo3.NestedMapDemo.parseFrom(is);
+      actual = demo2.getMetadataMap();
     } finally {
       is.close();
     }
@@ -104,20 +105,14 @@ public class MapSerializerTest {
     System.out.println();
 
     System.out.println("Actual: ");
-    System.out.println(demo2.getMetadataMap());
+    System.out.println(actual);
     System.out.println();
+
+    Assert.assertEquals(expected, actual);
   }
 
   @Test
   public void mapSerializerTestForDotnetInput() throws IOException {
-    Map<Integer, Map<Integer, Integer>> expected = new HashMap<Integer, Map<Integer, Integer>>();
-    expected.put(11, new HashMap<Integer, Integer>());
-    expected.get(11).put(12, 13);
-
-    expected.put(21, new HashMap<Integer, Integer>());
-    expected.get(21).put(22, 23);
-    expected.get(21).put(24, 25);
-
     ProtobufMapSerializer<Integer, Map<Integer, Integer>> serializer = ProtobufMapSerializer
         .<Integer, Map<Integer, Integer>> newBuilder().keyTypes(FieldType.INT32, FieldType.INT32)
         .valueType(FieldType.INT32).build();
@@ -131,6 +126,14 @@ public class MapSerializerTest {
       if (is != null)
         is.close();
     }
+
+    Map<Integer, Map<Integer, Integer>> expected = new HashMap<Integer, Map<Integer, Integer>>();
+    expected.put(11, new HashMap<Integer, Integer>());
+    expected.get(11).put(12, 13);
+
+    expected.put(21, new HashMap<Integer, Integer>());
+    expected.get(21).put(22, 23);
+    expected.get(21).put(24, 25);
 
     System.out.println("Expected: ");
     System.out.println(expected);

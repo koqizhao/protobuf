@@ -1,0 +1,10 @@
+
+syntax = "proto2";
+
+option java_package = "com.google.protobuf.list";
+
+import "demo.proto";
+
+message DemoList {
+    repeated Demo value = 1;
+}

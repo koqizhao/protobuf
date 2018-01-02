@@ -652,7 +652,7 @@ public final class DemoOuterClass {
                 com.google.protobuf.list.DemoOuterClass.Demo.class, com.google.protobuf.list.DemoOuterClass.Demo.Builder.class);
       }
 
-      // Construct using com.google.protobuf.map.nested.DemoOuterClass.Demo.newBuilder()
+      // Construct using com.google.protobuf.list.DemoOuterClass.Demo.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -1243,8 +1243,8 @@ public final class DemoOuterClass {
       "\n\ndemo.proto\"\214\001\n\004Demo\022\013\n\003url\030\001 \002(\t\022\r\n\005ti" +
       "tle\030\002 \001(\t\022\020\n\010snippets\030\003 \003(\t\022%\n\010metadata\030" +
       "\004 \003(\0132\023.Demo.MetadataEntry\032/\n\rMetadataEn" +
-      "try\022\013\n\003key\030\001 \001(\005\022\r\n\005value\030\002 \001(\t:\0028\001B \n\036c" +
-      "om.google.protobuf.map.nested"
+      "try\022\013\n\003key\030\001 \001(\005\022\r\n\005value\030\002 \001(\t:\0028\001B\032\n\030c" +
+      "om.google.protobuf.list"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
