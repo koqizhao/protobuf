@@ -3,12 +3,15 @@ package com.google.protobuf.list;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.google.protobuf.ProtobufListSerializer;
 import com.google.protobuf.ProtobufMapSerializer;
 import com.google.protobuf.WireFormat.FieldType;
 import com.google.protobuf.list.NestedMapDemoOuterClass.NestedMapDemo;
@@ -71,15 +74,17 @@ public class UserGuide {
 
     // init pb map serializer, which is thread safe & reusable
     // nested map can be think as multiple keys & a single value:
-    //    key1, key2, ..., keyN, value
+    //     key1, key2, ..., keyN, value
     ProtobufMapSerializer<Integer, Map<Integer, Integer>> serializer = ProtobufMapSerializer
         .<Integer, Map<Integer, Integer>> newBuilder().keyTypes(FieldType.INT32, FieldType.INT32)
         .valueType(FieldType.INT32).build();
 
     // Notice:
     // the Builder has another method:
-    //    valueDefault(Object valueDefault)
-    // if valueType is Enum or Message, valueDefault method must be invoked
+    //     valueDefault(Object valueDefault)
+    // if valueType is Enum or Message, valueDefault method must be invoked.
+    // For example:
+    //     valueDefault(SomeMessageClass.getDefaultInstance())
 
     // serialization
     byte[] bytes = null;
@@ -103,6 +108,46 @@ public class UserGuide {
 
     // same as origin
     Assert.assertEquals(map, map2);
+  }
+
+  @Test
+  public void listSerializerTest() throws IOException {
+    // init a generic list
+    List<Integer> expected = new ArrayList<Integer>();
+    expected.add(11);
+    expected.add(22);
+
+    // init pb list serializer, which is thread safe & reusable
+    ProtobufListSerializer<Integer> serializer = ProtobufListSerializer.<Integer> newBuilder()
+        .valueType(FieldType.INT32).build();
+
+    // Notice:
+    // the Builder has another method:
+    //     valueDefault(V valueDefault)
+    // if valueType is Enum or Message, valueDefault method must be invoked.
+    // For example:
+    //     valueDefault(SomeMessageClass.getDefaultInstance())
+
+    // serialization
+    byte[] bytes = null;
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    try {
+      serializer.serialize(os, expected);
+      bytes = os.toByteArray();
+    } finally {
+      os.close();
+    }
+
+    // deserialization
+    List<Integer> actual;
+    ByteArrayInputStream is = new ByteArrayInputStream(bytes);
+    try {
+      actual = serializer.deserialize(is);
+    } finally {
+      is.close();
+    }
+
+    Assert.assertEquals(expected, actual);
   }
 
 }
