@@ -12,31 +12,6 @@ import com.google.protobuf.WireFormat.FieldType;
 @SuppressWarnings("unchecked")
 class SerializerUtil {
 
-  static Object defaultValue(FieldType fieldType) {
-    switch (fieldType) {
-      case BOOL:
-        return false;
-      case STRING:
-        return "";
-      case INT32:
-      case FIXED32:
-      case UINT32:
-      case SFIXED32:
-      case SINT32:
-      case INT64:
-      case UINT64:
-      case FIXED64:
-      case SFIXED64:
-      case SINT64:
-        return 0;
-      case DOUBLE:
-      case FLOAT:
-        return 0.0;
-      default:
-        return null;
-    }
-  }
-
   static boolean isSupportedKeyType(FieldType fieldType) {
     switch (fieldType) {
       case BOOL:

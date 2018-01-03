@@ -120,7 +120,7 @@ public class ProtobufListSerializer<V> {
         throw new UnsupportedOperationException("valueType is not set.");
 
       if (_valueDefault == null)
-        _valueDefault = (V) SerializerUtil.defaultValue(_valueType);
+        _valueDefault = (V) _valueType.getJavaType().getDefaultDefault();
 
       if (_valueDefault == null)
         throw new UnsupportedOperationException("valueType is " + _valueType + ", but valueDefault is not set.");

@@ -147,7 +147,7 @@ public class ProtobufMapSerializer<K, V> {
         throw new UnsupportedOperationException("valueType is not set.");
 
       if (_valueDefault == null)
-        _valueDefault = SerializerUtil.defaultValue(_valueType);
+        _valueDefault = _valueType.getJavaType().getDefaultDefault();
 
       if (_valueDefault == null)
         throw new UnsupportedOperationException("valueType is " + _valueType + ", but valueDefault is not set.");
@@ -156,11 +156,11 @@ public class ProtobufMapSerializer<K, V> {
       for (int i = _keyTypes.size() - 1; i >= 0; i--) {
         FieldType keyType = _keyTypes.get(i);
         if (defaultEntry == null)
-          defaultEntry = MapEntry.newDefaultInstance(keyType, SerializerUtil.defaultValue(keyType), _valueType,
+          defaultEntry = MapEntry.newDefaultInstance(keyType, keyType.getJavaType().getDefaultDefault(), _valueType,
               _valueDefault);
         else
-          defaultEntry = MapEntry.newDefaultInstance(keyType, SerializerUtil.defaultValue(keyType), FieldType.MESSAGE,
-              defaultEntry);
+          defaultEntry = MapEntry.newDefaultInstance(keyType, keyType.getJavaType().getDefaultDefault(),
+              FieldType.MESSAGE, defaultEntry);
       }
 
       return defaultEntry;
