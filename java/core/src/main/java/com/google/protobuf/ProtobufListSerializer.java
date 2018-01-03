@@ -56,25 +56,19 @@ public class ProtobufListSerializer<V> {
     codedOutputStream.flush();
   }
 
-  public List<V> deserialize(CodedInputStream codedInputStream) throws IOException {
+  public List<V> deserialize(CodedInputStream codedInputStream) throws InvalidProtocolBufferException {
     try {
-      List<V> list = null;
+      List<V> list = new ArrayList<V>();
       while (true) {
         int tag = codedInputStream.readTag();
         if (tag == 0)
           break;
 
         if (tag == _valueTag) {
-          if (list == null)
-            list = new ArrayList<V>();
-
           V entry = SerializerUtil.parseField(codedInputStream, _valueType, _valueDefault);
           list.add(entry);
         }
       }
-
-      if (list == null)
-        throw new InvalidProtocolBufferException("No list data in the stream.");
 
       return list;
     } catch (InvalidProtocolBufferException e) {

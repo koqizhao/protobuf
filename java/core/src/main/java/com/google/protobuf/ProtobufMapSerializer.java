@@ -56,26 +56,20 @@ public class ProtobufMapSerializer<K, V> {
     codedOutputStream.flush();
   }
 
-  public Map<K, V> deserialize(CodedInputStream codedInputStream) throws IOException {
+  public Map<K, V> deserialize(CodedInputStream codedInputStream) throws InvalidProtocolBufferException {
     try {
-      Map map = null;
+      Map map = new HashMap();
       while (true) {
         int tag = codedInputStream.readTag();
         if (tag == 0)
           break;
 
         if (tag == ENTRY_TAG) {
-          if (map == null)
-            map = new HashMap();
-
           MapEntry mapEntry = (MapEntry) codedInputStream.readMessage(_defaultEntry.getParserForType(),
               ExtensionRegistryLite.getEmptyRegistry());
           map.put(mapEntry.getKey(), mapEntry.getRealValue());
         }
       }
-
-      if (map == null)
-        throw new InvalidProtocolBufferException("No map data in the stream.");
 
       return map;
     } catch (InvalidProtocolBufferException e) {
