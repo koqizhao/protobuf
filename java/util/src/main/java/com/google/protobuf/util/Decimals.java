@@ -29,11 +29,7 @@ public class Decimals {
   }
 
   public static Decimal valueOf(long value) {
-    Decimal.Builder result = Decimal.newBuilder();
-    result.setSignScale(value < 0 ? 1 : 0);
-    result.setLow(Math.abs(value));
-    result.setHigh(0);
-    return result.build();
+    return valueOf(BigDecimal.valueOf(value));
   }
 
   public static double doubleValue(Decimal value) {
