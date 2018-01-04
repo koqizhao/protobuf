@@ -1,0 +1,12 @@
+
+syntax = "proto2";
+
+option java_package = "com.google.protobuf.util";
+
+import "google/protobuf/decimal.proto";
+
+message DecimalDemo {
+    required string title = 1;
+    required google.protobuf.Decimal decimalValue = 2;
+}
+

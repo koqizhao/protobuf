@@ -1,0 +1,12 @@
+
+syntax = "proto2";
+
+option java_package = "com.google.protobuf.util";
+
+import "google/protobuf/datetime.proto";
+
+message DateTimeDemo {
+    required string title = 1;
+    required google.protobuf.DateTime dateTimeValue = 2;
+}
+
