@@ -192,6 +192,8 @@ RELATIVE_WELL_KNOWN_PROTOS = [
     "google/protobuf/any.proto",
     "google/protobuf/api.proto",
     "google/protobuf/compiler/plugin.proto",
+    "google/protobuf/datetime.proto",
+    "google/protobuf/decimal.proto",
     "google/protobuf/descriptor.proto",
     "google/protobuf/duration.proto",
     "google/protobuf/empty.proto",
