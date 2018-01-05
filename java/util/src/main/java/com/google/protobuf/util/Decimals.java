@@ -161,4 +161,8 @@ public class Decimals {
 
   }
 
+  protected Decimals() {
+
+  }
+
 }

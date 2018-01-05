@@ -17,11 +17,11 @@ public class DateTimes {
   // milliseconds between 1970-0-0 00:00:00.000 and 0000-0-0 00:00:00.000
   protected static final long MIN_MILLISECONDS = -62135798400000L;
 
-  protected static final long TICKS_PER_MILLISECOND = 10000L;
-  protected static final long TICKS_PER_SECOND = TICKS_PER_MILLISECOND * 1000;
-  protected static final long TICKS_PER_MINUTE = TICKS_PER_SECOND * 60;
-  protected static final long TICKS_PER_HOUR = TICKS_PER_MINUTE * 60;
-  protected static final long TICKS_PER_DAY = TICKS_PER_HOUR * 24;
+  protected static final long TICKS_PER_MILLISECOND = 1 * 10000L;
+  protected static final long MILLISECONDS_PER_SECOND = 1 * 1000L;
+  protected static final long MILLISECONDS_PER_MINUTE = MILLISECONDS_PER_SECOND * 60;
+  protected static final long MILLISECONDS_PER_HOUR = MILLISECONDS_PER_MINUTE * 60;
+  protected static final long MILLISECONDS_PER_DAY = MILLISECONDS_PER_HOUR * 24;
 
   protected static final long MAXMIN_MAX = 1L;
   protected static final long MAXMIN_MIN = -1L;
@@ -29,7 +29,7 @@ public class DateTimes {
   protected static final long LOCAL_TIME_ZONE_OFFSET = Calendar.getInstance().get(Calendar.ZONE_OFFSET);
 
   public static DateTime valueOf(Calendar calendar) {
-    long milliseconds = calendar.getTimeInMillis() + LOCAL_TIME_ZONE_OFFSET;
+    long milliseconds = calendar.getTimeInMillis();
     DateTime.Builder result = DateTime.newBuilder();
     if (milliseconds >= MAX_MILLISECONDS) {
       result.setValue(MAXMIN_MAX);
@@ -38,8 +38,8 @@ public class DateTimes {
       result.setValue(MAXMIN_MIN);
       result.setScale(TimeSpanScale.MINMAX);
     } else {
-      result.setValue(milliseconds * TICKS_PER_MILLISECOND);
-      result.setScale(TimeSpanScale.TICKS);
+      result.setValue(milliseconds + calendar.get(Calendar.ZONE_OFFSET));
+      result.setScale(TimeSpanScale.MILLISECONDS);
     }
 
     return result.build();
@@ -47,35 +47,35 @@ public class DateTimes {
 
   public static Calendar toCalendar(DateTime dateTime) {
     Calendar result = Calendar.getInstance();
-    result.setTimeInMillis(toMilliseconds(dateTime) - LOCAL_TIME_ZONE_OFFSET);
+    result.setTimeInMillis(toMillisecondsWithTimeZone(dateTime));
     return result;
   }
 
-  protected static long toMilliseconds(DateTime dateTime) {
-    long ticks = toTicks(dateTime);
-    if (ticks == Long.MAX_VALUE)
+  protected static long toMillisecondsWithTimeZone(DateTime dateTime) {
+    long milliseconds = toMilliseconds(dateTime);
+    if (milliseconds == Long.MAX_VALUE)
       return MAX_MILLISECONDS;
 
-    if (ticks == Long.MIN_VALUE)
+    if (milliseconds == Long.MIN_VALUE)
       return MIN_MILLISECONDS;
 
-    return ticks / TICKS_PER_MILLISECOND;
+    return milliseconds - LOCAL_TIME_ZONE_OFFSET;
   }
 
-  protected static long toTicks(DateTime dateTime) {
+  protected static long toMilliseconds(DateTime dateTime) {
     switch (dateTime.getScale()) {
       case DAYS:
-        return dateTime.getValue() * TICKS_PER_DAY;
+        return dateTime.getValue() * MILLISECONDS_PER_DAY;
       case HOURS:
-        return dateTime.getValue() * TICKS_PER_HOUR;
+        return dateTime.getValue() * MILLISECONDS_PER_HOUR;
       case MINUTES:
-        return dateTime.getValue() * TICKS_PER_MINUTE;
+        return dateTime.getValue() * MILLISECONDS_PER_MINUTE;
       case SECONDS:
-        return dateTime.getValue() * TICKS_PER_SECOND;
+        return dateTime.getValue() * MILLISECONDS_PER_SECOND;
       case MILLISECONDS:
-        return dateTime.getValue() * TICKS_PER_MILLISECOND;
-      case TICKS:
         return dateTime.getValue();
+      case TICKS:
+        return dateTime.getValue() / TICKS_PER_MILLISECOND;
       case MINMAX:
         if (dateTime.getValue() == MAXMIN_MAX)
           return Long.MAX_VALUE;
@@ -86,6 +86,10 @@ public class DateTimes {
       default:
         throw new IllegalArgumentException("Unknown timescale: " + dateTime.getScale());
     }
+  }
+
+  protected DateTimes() {
+
   }
 
 }
