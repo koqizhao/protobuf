@@ -200,6 +200,7 @@
   <modules>
     <module>core</module>
     <module>util</module>
+    <module>dotnettype</module>
   </modules>
 
 </project>

@@ -39,5 +39,11 @@
         <arg value="${test.proto.dir}/com/google/protobuf/map_for_proto2_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/map_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/map_initialization_order_test.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/list/Demo.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/list/DemoList.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/list/NestedMapDemo.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/list/NestedMapDemo2.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/list/NestedMapDemo3.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/list/NestedMapDemo4.proto"/>
     </exec>
 </project>

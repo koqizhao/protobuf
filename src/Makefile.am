@@ -35,8 +35,6 @@ protodir = $(includedir)
 nobase_dist_proto_DATA = google/protobuf/descriptor.proto     \
                          google/protobuf/any.proto            \
                          google/protobuf/api.proto            \
-                         google/protobuf/datetime.proto       \
-                         google/protobuf/decimal.proto       \
                          google/protobuf/duration.proto       \
                          google/protobuf/empty.proto          \
                          google/protobuf/field_mask.proto     \

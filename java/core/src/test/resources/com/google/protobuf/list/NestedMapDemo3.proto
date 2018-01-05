@@ -1,8 +1,0 @@
-
-syntax = "proto2";
-
-option java_package = "com.google.protobuf.list";
-
-message NestedMapDemo {
-    map<int32, map<int32, int32>> metadata = 1;
-}

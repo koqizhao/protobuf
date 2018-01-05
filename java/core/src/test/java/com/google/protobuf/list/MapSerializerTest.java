@@ -94,8 +94,8 @@ public class MapSerializerTest {
     ByteArrayInputStream is = new ByteArrayInputStream(bytes);
     Map<Integer, Map<Integer, Integer>> actual;
     try {
-      NestedMapDemo3.NestedMapDemo demo2 = NestedMapDemo3.NestedMapDemo.parseFrom(is);
-      actual = demo2.getMetadataMap();
+      NestedMapDemo3 demo = NestedMapDemo3.parseFrom(is);
+      actual = demo.getMetadataMap();
     } finally {
       is.close();
     }

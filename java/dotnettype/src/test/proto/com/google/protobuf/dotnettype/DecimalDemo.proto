@@ -1,0 +1,15 @@
+
+syntax = "proto2";
+
+package google.protobuf.dotnettype;
+
+option java_package = "com.google.protobuf.dotnettype";
+option java_multiple_files = true;
+
+import "google/protobuf/dotnettype/decimal.proto";
+
+message DecimalDemo {
+    required string title = 1;
+    required Decimal decimalValue = 2;
+}
+

@@ -17,8 +17,6 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MapEntry.MapDescriptors;
 import com.google.protobuf.WireFormat.FieldType;
-import com.google.protobuf.list.DemoOuterClass.Demo;
-import com.google.protobuf.list.NestedMapDemoOuterClass.NestedMapDemo;
 
 /**
  * @author koqizhao
@@ -99,8 +97,8 @@ public class NestedMapFieldTest {
     Map<String, Integer> mapValue = new HashMap<String, Integer>();
     mapValue.put("ok1", 1);
     mapValue.put("ok2", 2);
-    NestedMapDemo2.NestedMapDemo demo = NestedMapDemo2.NestedMapDemo.newBuilder().setTitle("ok").setUrl("http://test")
-        .addSnippets("ok").putMetadata(1, mapValue).build();
+    NestedMapDemo2 demo = NestedMapDemo2.newBuilder().setTitle("ok").setUrl("http://test").addSnippets("ok")
+        .putMetadata(1, mapValue).build();
     System.out.println(demo);
 
     byte[] bytes = null;
@@ -116,7 +114,7 @@ public class NestedMapFieldTest {
     System.out.println();
     ByteArrayInputStream is = new ByteArrayInputStream(bytes);
     try {
-      NestedMapDemo2.NestedMapDemo demo2 = NestedMapDemo2.NestedMapDemo.parseFrom(is);
+      NestedMapDemo2 demo2 = NestedMapDemo2.parseFrom(is);
       System.out.println(demo2);
 
       Assert.assertEquals(demo.getTitle(), demo2.getTitle());
@@ -139,7 +137,7 @@ public class NestedMapFieldTest {
     expected.get(21).put(22, 23);
     expected.get(21).put(24, 25);
 
-    NestedMapDemo3.NestedMapDemo demo = NestedMapDemo3.NestedMapDemo.newBuilder().putAllMetadata(expected).build();
+    NestedMapDemo3 demo = NestedMapDemo3.newBuilder().putAllMetadata(expected).build();
 
     byte[] bytes = null;
     ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -153,9 +151,9 @@ public class NestedMapFieldTest {
 
     System.out.println();
     ByteArrayInputStream is = new ByteArrayInputStream(bytes);
-    NestedMapDemo3.NestedMapDemo demo2;
+    NestedMapDemo3 demo2;
     try {
-      demo2 = NestedMapDemo3.NestedMapDemo.parseFrom(is);
+      demo2 = NestedMapDemo3.parseFrom(is);
     } finally {
       is.close();
     }
@@ -178,8 +176,8 @@ public class NestedMapFieldTest {
         .putMetadata(2, "22").build());
     mapValue.put("ok2", Demo.newBuilder().setTitle("ok2").setUrl("http://test2").addSnippets("ok2").putMetadata(3, "33")
         .putMetadata(4, "44").build());
-    NestedMapDemo4.NestedMapDemo demo = NestedMapDemo4.NestedMapDemo.newBuilder().setTitle("ok").setUrl("http://test")
-        .addSnippets("ok").putMetadata(1, mapValue).build();
+    NestedMapDemo4 demo = NestedMapDemo4.newBuilder().setTitle("ok").setUrl("http://test").addSnippets("ok")
+        .putMetadata(1, mapValue).build();
     System.out.println(demo);
 
     byte[] bytes = null;
@@ -196,7 +194,7 @@ public class NestedMapFieldTest {
 
     ByteArrayInputStream is = new ByteArrayInputStream(bytes);
     try {
-      NestedMapDemo4.NestedMapDemo demo2 = NestedMapDemo4.NestedMapDemo.parseFrom(is);
+      NestedMapDemo4 demo2 = NestedMapDemo4.parseFrom(is);
       System.out.println(demo2);
 
       Assert.assertEquals(demo.getTitle(), demo2.getTitle());

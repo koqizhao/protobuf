@@ -12,8 +12,6 @@ import org.junit.Test;
 
 import com.google.protobuf.ProtobufListSerializer;
 import com.google.protobuf.WireFormat.FieldType;
-import com.google.protobuf.list.DemoListOuterClass.DemoList;
-import com.google.protobuf.list.DemoOuterClass.Demo;
 
 /**
  * @author koqizhao

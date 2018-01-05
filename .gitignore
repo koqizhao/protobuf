@@ -88,6 +88,7 @@ RemoteSystemsTempFiles
 .project
 .metadata
 .recommenders
+bin/
 
 # Windows native output.
 cmake/build

@@ -1,0 +1,14 @@
+
+syntax = "proto2";
+
+package google.protobuf.list;
+
+option java_package = "com.google.protobuf.list";
+option java_multiple_files = true;
+
+message NestedMapDemo {
+    required string url = 1;
+    optional string title = 2;
+    repeated string snippets = 3;
+    map<int32, map<string, string>> metadata = 4;
+}

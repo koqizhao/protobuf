@@ -14,7 +14,6 @@ import org.junit.Test;
 import com.google.protobuf.ProtobufListSerializer;
 import com.google.protobuf.ProtobufMapSerializer;
 import com.google.protobuf.WireFormat.FieldType;
-import com.google.protobuf.list.NestedMapDemoOuterClass.NestedMapDemo;
 
 /**
  * @author koqizhao
@@ -74,17 +73,17 @@ public class UserGuide {
 
     // init pb map serializer, which is thread safe & reusable
     // nested map can be think as multiple keys & a single value:
-    //     key1, key2, ..., keyN, value
+    // key1, key2, ..., keyN, value
     ProtobufMapSerializer<Integer, Map<Integer, Integer>> serializer = ProtobufMapSerializer
         .<Integer, Map<Integer, Integer>> newBuilder().keyTypes(FieldType.INT32, FieldType.INT32)
         .valueType(FieldType.INT32).build();
 
     // Notice:
     // the Builder has another method:
-    //     valueDefault(Object valueDefault)
+    // valueDefault(Object valueDefault)
     // if valueType is Enum or Message, valueDefault method must be invoked.
     // For example:
-    //     valueDefault(SomeMessageClass.getDefaultInstance())
+    // valueDefault(SomeMessageClass.getDefaultInstance())
 
     // serialization
     byte[] bytes = null;
@@ -123,10 +122,10 @@ public class UserGuide {
 
     // Notice:
     // the Builder has another method:
-    //     valueDefault(V valueDefault)
+    // valueDefault(V valueDefault)
     // if valueType is Enum or Message, valueDefault method must be invoked.
     // For example:
-    //     valueDefault(SomeMessageClass.getDefaultInstance())
+    // valueDefault(SomeMessageClass.getDefaultInstance())
 
     // serialization
     byte[] bytes = null;
