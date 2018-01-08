@@ -27,11 +27,6 @@
     </dependency>
   </dependencies>
 
-  <properties>
-    <proto.dir>src/main/proto</proto.dir>
-    <test.proto.dir>src/test/proto</test.proto.dir>
-  </properties>
-
   <build>
     <plugins>
       <plugin>

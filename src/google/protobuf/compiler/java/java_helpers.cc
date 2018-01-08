@@ -476,7 +476,7 @@ string DefaultValue(const FieldDescriptor* field, bool immutable,
           ".getDefaultInstance()";
 
     case FieldDescriptor::CPPTYPE_DATETIME:
-      return "DateTime.EMPTY";
+      return "com.google.protobuf.dotnettype.DateTimes.defaultCalendar()";
 
     // No default because we want the compiler to complain if any new
     // types are added.

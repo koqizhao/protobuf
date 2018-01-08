@@ -93,7 +93,7 @@ FieldDescriptor::kTypeToCppTypeMap[MAX_TYPE + 1] = {
   CPPTYPE_INT64,    // TYPE_SFIXED64
   CPPTYPE_INT32,    // TYPE_SINT32
   CPPTYPE_INT64,    // TYPE_SINT64
-  CPPTYPE_DATETIME,    // TYPE_DATETIME
+  CPPTYPE_DATETIME, // TYPE_DATETIME
 };
 
 const char * const FieldDescriptor::kTypeToName[MAX_TYPE + 1] = {
