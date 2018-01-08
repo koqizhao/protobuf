@@ -1,12 +1,10 @@
 
 syntax = "proto2";
 
-package google.protobuf.dotnettype;
-
 option java_package = "com.google.protobuf.dotnettype";
 option java_multiple_files = true;
 
-import "google/protobuf/dotnettype/datetime.proto";
+import "dotnettype/datetime.proto";
 
 message DateTimeDemo {
     required string title = 1;

@@ -1,8 +1,6 @@
 
 syntax = "proto3";
 
-package google.protobuf.dotnettype;
-
 option cc_enable_arenas = true;
 option go_package = "github.com/golang/protobuf/dotnettypes/decimal";
 option java_package = "com.google.protobuf.dotnettype";

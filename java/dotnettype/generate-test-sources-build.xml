@@ -5,7 +5,7 @@
         <arg value="--proto_path=${protobuf.source.dir}"/>
         <arg value="--proto_path=${proto.dir}"/>
         <arg value="--proto_path=${test.proto.dir}"/>
-        <arg value="${test.proto.dir}/com/google/protobuf/dotnettype/DateTimeDemo.proto"/>
-        <arg value="${test.proto.dir}/com/google/protobuf/dotnettype/DecimalDemo.proto"/>
+        <arg value="${test.proto.dir}/dotnettype/DateTimeDemo.proto"/>
+        <arg value="${test.proto.dir}/dotnettype/DecimalDemo.proto"/>
     </exec>
 </project>

@@ -5,7 +5,7 @@
         <arg value="--java_out=${generated.sources.dir}"/>
         <arg value="--proto_path=${protobuf.source.dir}"/>
         <arg value="--proto_path=${proto.dir}"/>
-        <arg value="${proto.dir}/google/protobuf/dotnettype/datetime.proto"/>
-        <arg value="${proto.dir}/google/protobuf/dotnettype/decimal.proto"/>
+        <arg value="${proto.dir}/dotnettype/datetime.proto"/>
+        <arg value="${proto.dir}/dotnettype/decimal.proto"/>
     </exec>
 </project>
