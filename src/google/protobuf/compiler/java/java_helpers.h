@@ -189,7 +189,8 @@ enum JavaType {
   JAVATYPE_STRING,
   JAVATYPE_BYTES,
   JAVATYPE_ENUM,
-  JAVATYPE_MESSAGE
+  JAVATYPE_MESSAGE,
+  JAVATYPE_DATETIME
 };
 
 JavaType GetJavaType(const FieldDescriptor* field);

@@ -312,6 +312,9 @@ JavaType GetJavaType(const FieldDescriptor* field) {
     case FieldDescriptor::TYPE_MESSAGE:
       return JAVATYPE_MESSAGE;
 
+    case FieldDescriptor::TYPE_DATETIME:
+      return JAVATYPE_DATETIME;
+
     // No default because we want the compiler to complain if any new
     // types are added.
   }
@@ -331,6 +334,7 @@ const char* PrimitiveTypeName(JavaType type) {
     case JAVATYPE_BYTES  : return "com.google.protobuf.ByteString";
     case JAVATYPE_ENUM   : return NULL;
     case JAVATYPE_MESSAGE: return NULL;
+    case JAVATYPE_DATETIME: return "java.util.Calendar";
 
     // No default because we want the compiler to complain if any new
     // JavaTypes are added.
@@ -351,6 +355,7 @@ const char* BoxedPrimitiveTypeName(JavaType type) {
     case JAVATYPE_BYTES  : return "com.google.protobuf.ByteString";
     case JAVATYPE_ENUM   : return NULL;
     case JAVATYPE_MESSAGE: return NULL;
+    case JAVATYPE_DATETIME: return "java.util.Calendar";
 
     // No default because we want the compiler to complain if any new
     // JavaTypes are added.
@@ -380,6 +385,7 @@ const char* FieldTypeName(FieldDescriptor::Type field_type) {
     case FieldDescriptor::TYPE_ENUM    : return "ENUM";
     case FieldDescriptor::TYPE_GROUP   : return "GROUP";
     case FieldDescriptor::TYPE_MESSAGE : return "MESSAGE";
+    case FieldDescriptor::TYPE_DATETIME: return "DATETIME";
 
     // No default because we want the compiler to complain if any new
     // types are added.
@@ -469,6 +475,9 @@ string DefaultValue(const FieldDescriptor* field, bool immutable,
       return name_resolver->GetClassName(field->message_type(), immutable) +
           ".getDefaultInstance()";
 
+    case FieldDescriptor::CPPTYPE_DATETIME:
+      return "DateTime.EMPTY";
+
     // No default because we want the compiler to complain if any new
     // types are added.
   }
@@ -499,6 +508,9 @@ bool IsDefaultValueJavaDefault(const FieldDescriptor* field) {
       return field->default_value_enum()->number() == 0;
     case FieldDescriptor::CPPTYPE_STRING:
     case FieldDescriptor::CPPTYPE_MESSAGE:
+      return false;
+
+    case FieldDescriptor::CPPTYPE_DATETIME:
       return false;
 
     // No default because we want the compiler to complain if any new
@@ -630,6 +642,8 @@ bool IsReferenceType(JavaType type) {
     case JAVATYPE_ENUM   : return true;
     case JAVATYPE_MESSAGE: return true;
 
+    case JAVATYPE_DATETIME: return false;
+
     // No default because we want the compiler to complain if any new
     // JavaTypes are added.
   }
@@ -660,6 +674,8 @@ const char* GetCapitalizedType(const FieldDescriptor* field, bool immutable) {
     case FieldDescriptor::TYPE_ENUM    : return "Enum";
     case FieldDescriptor::TYPE_GROUP   : return "Group";
     case FieldDescriptor::TYPE_MESSAGE : return "Message";
+
+    case FieldDescriptor::TYPE_DATETIME: return "DateTime";
 
     // No default because we want the compiler to complain if any new
     // types are added.
@@ -693,6 +709,7 @@ int FixedSize(FieldDescriptor::Type type) {
     case FieldDescriptor::TYPE_BYTES   : return -1;
     case FieldDescriptor::TYPE_GROUP   : return -1;
     case FieldDescriptor::TYPE_MESSAGE : return -1;
+    case FieldDescriptor::TYPE_DATETIME: return -1;
 
     // No default because we want the compiler to complain if any new
     // types are added.

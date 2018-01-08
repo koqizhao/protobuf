@@ -352,6 +352,7 @@ GenerateEqualsCode(io::Printer* printer) const {
 
     case JAVATYPE_STRING:
     case JAVATYPE_BYTES:
+    case JAVATYPE_DATETIME:
       printer->Print(variables_,
         "result = result && get$capitalized_name$()\n"
         "    .equals(other.get$capitalized_name$());\n");
@@ -401,6 +402,7 @@ GenerateHashCode(io::Printer* printer) const {
 
     case JAVATYPE_STRING:
     case JAVATYPE_BYTES:
+    case JAVATYPE_DATETIME:
       printer->Print(variables_,
         "hash = (53 * hash) + get$capitalized_name$().hashCode();\n");
       break;
