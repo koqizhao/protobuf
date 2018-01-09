@@ -830,6 +830,11 @@ public final class CodedInputStream {
             (((long) buffer[pos + 7] & 0xffL) << 56));
   }
 
+  public Calendar readDateTime() throws IOException {
+    DateTime dateTime = readMessage(DateTime.parser(), ExtensionRegistry.getEmptyRegistry());
+    return DateTimes.toCalendar(dateTime);
+  }
+
   /**
    * Decode a ZigZag-encoded 32-bit value.  ZigZag encodes signed integers
    * into values that can be efficiently encoded with varint.  (Otherwise,
@@ -1302,10 +1307,5 @@ public final class CodedInputStream {
     }
 
     bufferPos = size - pos;
-  }
-
-  public Calendar readDateTime() throws IOException {
-    DateTime dateTime = readMessage(DateTime.parser(), ExtensionRegistry.getEmptyRegistry());
-    return DateTimes.toCalendar(dateTime);
   }
 }

@@ -386,6 +386,7 @@ public abstract class CodedOutputStream extends ByteOutput {
   public abstract void writeRawMessageSetExtension(final int fieldNumber, final ByteString value)
       throws IOException;
 
+  /** Write a {@code DateTime} field, including tag, to the stream. */
   // Abstract to avoid overhead of additional virtual method calls.
   public abstract void writeDateTime(final int fieldNumber, final Calendar value)
       throws IOException;
@@ -477,6 +478,10 @@ public abstract class CodedOutputStream extends ByteOutput {
   /** Write an embedded message field to the stream. */
   // Abstract to avoid overhead of additional virtual method calls.
   public abstract void writeMessageNoTag(final MessageLite value) throws IOException;
+
+  /** Write a DateTime field to the stream. */
+  // Abstract to avoid overhead of additional virtual method calls.
+  public abstract void writeDateTimeNoTag(final Calendar value) throws IOException;
 
   //=================================================================
 
@@ -1291,15 +1296,21 @@ public abstract class CodedOutputStream extends ByteOutput {
     }
 
     @Override
-    public void writeDateTime(int fieldNumber, Calendar value) throws IOException {
+    public final void writeMessageNoTag(final MessageLite value) throws IOException {
+      writeUInt32NoTag(value.getSerializedSize());
+      value.writeTo(this);
+    }
+
+    @Override
+    public void writeDateTime(final int fieldNumber, final Calendar value) throws IOException {
       DateTime dateTime = DateTimes.valueOf(value);
       writeMessage(fieldNumber, dateTime);
     }
 
     @Override
-    public final void writeMessageNoTag(final MessageLite value) throws IOException {
-      writeUInt32NoTag(value.getSerializedSize());
-      value.writeTo(this);
+    public void writeDateTimeNoTag(final Calendar value) throws IOException {
+      DateTime dateTime = DateTimes.valueOf(value);
+      writeMessageNoTag(dateTime);
     }
 
     @Override
@@ -1637,15 +1648,21 @@ public abstract class CodedOutputStream extends ByteOutput {
     }
 
     @Override
-    public void writeDateTime(int fieldNumber, Calendar value) throws IOException {
+    public void writeMessageNoTag(final MessageLite value) throws IOException {
+      writeUInt32NoTag(value.getSerializedSize());
+      value.writeTo(this);
+    }
+
+    @Override
+    public void writeDateTime(final int fieldNumber, final Calendar value) throws IOException {
       DateTime dateTime = DateTimes.valueOf(value);
       writeMessage(fieldNumber, dateTime);
     }
 
     @Override
-    public void writeMessageNoTag(final MessageLite value) throws IOException {
-      writeUInt32NoTag(value.getSerializedSize());
-      value.writeTo(this);
+    public void writeDateTimeNoTag(final Calendar value) throws IOException {
+      DateTime dateTime = DateTimes.valueOf(value);
+      writeMessageNoTag(dateTime);
     }
 
     @Override
@@ -2147,15 +2164,21 @@ public abstract class CodedOutputStream extends ByteOutput {
     }
 
     @Override
-    public void writeDateTime(int fieldNumber, Calendar value) throws IOException {
+    public void writeMessageNoTag(final MessageLite value) throws IOException {
+      writeUInt32NoTag(value.getSerializedSize());
+      value.writeTo(this);
+    }
+
+    @Override
+    public void writeDateTime(final int fieldNumber, final Calendar value) throws IOException {
       DateTime dateTime = DateTimes.valueOf(value);
       writeMessage(fieldNumber, dateTime);
     }
 
     @Override
-    public void writeMessageNoTag(final MessageLite value) throws IOException {
-      writeUInt32NoTag(value.getSerializedSize());
-      value.writeTo(this);
+    public void writeDateTimeNoTag(final Calendar value) throws IOException {
+      DateTime dateTime = DateTimes.valueOf(value);
+      writeMessageNoTag(dateTime);
     }
 
     @Override
@@ -2456,15 +2479,21 @@ public abstract class CodedOutputStream extends ByteOutput {
     }
 
     @Override
-    public void writeDateTime(int fieldNumber, Calendar value) throws IOException {
+    public void writeMessageNoTag(final MessageLite value) throws IOException {
+      writeUInt32NoTag(value.getSerializedSize());
+      value.writeTo(this);
+    }
+
+    @Override
+    public void writeDateTime(final int fieldNumber, final Calendar value) throws IOException {
       DateTime dateTime = DateTimes.valueOf(value);
       writeMessage(fieldNumber, dateTime);
     }
 
     @Override
-    public void writeMessageNoTag(final MessageLite value) throws IOException {
-      writeUInt32NoTag(value.getSerializedSize());
-      value.writeTo(this);
+    public void writeDateTimeNoTag(final Calendar value) throws IOException {
+      DateTime dateTime = DateTimes.valueOf(value);
+      writeMessageNoTag(dateTime);
     }
 
     @Override
