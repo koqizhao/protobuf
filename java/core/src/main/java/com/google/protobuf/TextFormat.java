@@ -34,11 +34,13 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.dotnettype.DateTimes;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -354,7 +356,7 @@ public final class TextFormat {
         }
       }
 
-      if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+      if (field.getJavaType().isMessageType()) {
         if (singleLineMode) {
           generator.print(" { ");
         } else {
@@ -367,7 +369,7 @@ public final class TextFormat {
 
       printFieldValue(field, value, generator);
 
-      if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+      if (field.getJavaType().isMessageType()) {
         if (singleLineMode) {
           generator.print("} ");
         } else {
@@ -448,6 +450,10 @@ public final class TextFormat {
         case MESSAGE:
         case GROUP:
           print((Message) value, generator);
+          break;
+
+        case DATETIME:
+          print(DateTimes.valueOf((Calendar) value), generator);
           break;
       }
     }

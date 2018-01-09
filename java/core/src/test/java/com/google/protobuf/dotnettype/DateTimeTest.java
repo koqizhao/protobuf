@@ -1,5 +1,7 @@
 package com.google.protobuf.dotnettype;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -44,6 +46,51 @@ public class DateTimeTest {
     DateTime actualDateTime = DateTimes.valueOf(actual);
     System.out.println(actualDateTime);
     Assert.assertEquals(dateTime, actualDateTime);
+  }
+
+  @Test
+  public void serializerTest() throws IOException {
+    long[] testData = new long[] { new Date().getTime(), Calendar.getInstance().getTimeInMillis(), 0,
+        DateTimes.defaultCalendar().getTimeInMillis(), DateTimes.toCalendar(DateTimes.MAX_VALUE).getTimeInMillis() };
+    for (long milliseconds : testData) {
+      Calendar calendar = Calendar.getInstance();
+      calendar.setTimeInMillis(milliseconds);
+      serializerTest(calendar);
+    }
+  }
+
+  private void serializerTest(Calendar calendar) throws IOException {
+    DateTimeDemo2 expected = DateTimeDemo2.newBuilder().setTitle("test").setDateTimeValue(calendar).build();
+
+    byte[] bytes = null;
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    try {
+      expected.writeTo(os);
+      bytes = os.toByteArray();
+      System.out.println("bytes length: " + bytes.length);
+    } finally {
+      os.close();
+    }
+
+    System.out.println();
+
+    DateTimeDemo2 actual;
+    ByteArrayInputStream is = new ByteArrayInputStream(bytes);
+    try {
+      actual = DateTimeDemo2.parseFrom(is);
+    } finally {
+      is.close();
+    }
+
+    System.out.println("Expected: ");
+    System.out.println(expected);
+    System.out.println();
+
+    System.out.println("Actual: ");
+    System.out.println(actual);
+    System.out.println();
+
+    Assert.assertEquals(expected, actual);
   }
 
   @Test

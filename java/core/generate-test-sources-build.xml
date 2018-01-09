@@ -3,6 +3,7 @@
     <exec executable="${protoc}">
         <arg value="--java_out=${generated.testsources.dir}"/>
         <arg value="--proto_path=${protobuf.source.dir}"/>
+        <arg value="--proto_path=${proto.dir}"/>
         <arg value="--proto_path=${test.proto.dir}"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_import.proto"/>
@@ -45,5 +46,6 @@
         <arg value="${test.proto.dir}/com/google/protobuf/list/NestedMapDemo2.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/list/NestedMapDemo3.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/list/NestedMapDemo4.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/dotnettype/DateTimeDemo2.proto"/>
     </exec>
 </project>

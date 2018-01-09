@@ -1032,7 +1032,7 @@ public final class Descriptors {
      * the same class that would returned by Message.getField(this).
      */
     public Object getDefaultValue() {
-      if (getJavaType() == JavaType.MESSAGE) {
+      if (getJavaType().isMessageType()) {
         throw new UnsupportedOperationException(
           "FieldDescriptor.getDefaultValue() called on an embedded message " +
           "field.");
@@ -1212,6 +1212,10 @@ public final class Descriptors {
        * type.  This is meant for use inside this file only, hence is private.
        */
       private final Object defaultDefault;
+
+      public boolean isMessageType() {
+        return this == MESSAGE || this == DATETIME;
+      }
     }
 
     // TODO(xiaofeng): Implement it consistently across different languages. See b/24751348.
