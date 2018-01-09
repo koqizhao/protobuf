@@ -1163,7 +1163,8 @@ public final class Descriptors {
       SFIXED32(JavaType.INT        ),
       SFIXED64(JavaType.LONG       ),
       SINT32  (JavaType.INT        ),
-      SINT64  (JavaType.LONG       );
+      SINT64  (JavaType.LONG       ),
+      DATETIME(JavaType.DATETIME   );
 
       Type(final JavaType javaType) {
         this.javaType = javaType;
@@ -1199,7 +1200,8 @@ public final class Descriptors {
       STRING(""),
       BYTE_STRING(ByteString.EMPTY),
       ENUM(null),
-      MESSAGE(null);
+      MESSAGE(null),
+      DATETIME(null);
 
       JavaType(final Object defaultDefault) {
         this.defaultDefault = defaultDefault;
@@ -1459,6 +1461,7 @@ public final class Descriptors {
               break;
             case MESSAGE:
             case GROUP:
+            case DATETIME:
               throw new DescriptorValidationException(this,
                 "Message type had default value.");
           }
@@ -1479,6 +1482,7 @@ public final class Descriptors {
               defaultValue = enumType.getValues().get(0);
               break;
             case MESSAGE:
+            case DATETIME:
               defaultValue = null;
               break;
             default:
