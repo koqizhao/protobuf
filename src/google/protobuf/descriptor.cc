@@ -94,6 +94,7 @@ FieldDescriptor::kTypeToCppTypeMap[MAX_TYPE + 1] = {
   CPPTYPE_INT32,    // TYPE_SINT32
   CPPTYPE_INT64,    // TYPE_SINT64
   CPPTYPE_DATETIME, // TYPE_DATETIME
+  CPPTYPE_DECIMAL,  // TYPE_DECIMAL
 };
 
 const char * const FieldDescriptor::kTypeToName[MAX_TYPE + 1] = {
@@ -118,6 +119,7 @@ const char * const FieldDescriptor::kTypeToName[MAX_TYPE + 1] = {
   "sint32",    // TYPE_SINT32
   "sint64",    // TYPE_SINT64
   "DateTime",  // TYPE_DATETIME
+  "Decimal",   // TYPE_DECIMAL
 };
 
 const char * const FieldDescriptor::kCppTypeToName[MAX_CPPTYPE + 1] = {
@@ -134,6 +136,7 @@ const char * const FieldDescriptor::kCppTypeToName[MAX_CPPTYPE + 1] = {
   "string",    // CPPTYPE_STRING
   "message",   // CPPTYPE_MESSAGE
   "DateTime",  // CPPTYPE_DATETIME
+  "Decimal",   // CPPTYPE_DECIMAL
 };
 
 const char * const FieldDescriptor::kLabelToName[MAX_LABEL + 1] = {

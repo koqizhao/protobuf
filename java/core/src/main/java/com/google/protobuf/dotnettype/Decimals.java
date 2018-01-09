@@ -10,6 +10,10 @@ import java.math.BigInteger;
  */
 public class Decimals {
 
+  public static BigDecimal defaultBigDecimal() {
+    return new BigDecimal(0);
+  }
+
   public static byte byteValue(Decimal value) {
     return bigDecimalValue(value).byteValue();
   }

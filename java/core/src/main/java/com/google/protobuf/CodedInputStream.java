@@ -33,6 +33,7 @@ package com.google.protobuf;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +42,8 @@ import java.util.List;
 
 import com.google.protobuf.dotnettype.DateTime;
 import com.google.protobuf.dotnettype.DateTimes;
+import com.google.protobuf.dotnettype.Decimal;
+import com.google.protobuf.dotnettype.Decimals;
 
 /**
  * Reads and decodes protocol message fields.
@@ -830,9 +833,16 @@ public final class CodedInputStream {
             (((long) buffer[pos + 7] & 0xffL) << 56));
   }
 
+  /** Read a dotnet DateTime from the stream. */
   public Calendar readDateTime() throws IOException {
     DateTime dateTime = readMessage(DateTime.parser(), ExtensionRegistry.getEmptyRegistry());
     return DateTimes.toCalendar(dateTime);
+  }
+
+  /** Read a dotnet decimal from the stream. */
+  public BigDecimal readDecimal() throws IOException {
+    Decimal decimal = readMessage(Decimal.parser(), ExtensionRegistry.getEmptyRegistry());
+    return Decimals.bigDecimalValue(decimal);
   }
 
   /**

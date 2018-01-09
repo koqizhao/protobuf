@@ -56,8 +56,7 @@
       <resource>
         <directory>${proto.dir}</directory>
         <includes>
-          <include>dotnettype/datetime.proto</include>
-          <include>dotnettype/decimal.proto</include>
+          <include>dotnettype.proto</include>
         </includes>
       </resource>
     </resources>

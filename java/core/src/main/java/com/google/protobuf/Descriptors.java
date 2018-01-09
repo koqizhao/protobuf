@@ -1164,7 +1164,8 @@ public final class Descriptors {
       SFIXED64(JavaType.LONG       ),
       SINT32  (JavaType.INT        ),
       SINT64  (JavaType.LONG       ),
-      DATETIME(JavaType.DATETIME   );
+      DATETIME(JavaType.DATETIME   ),
+      DECIMAL (JavaType.DECIMAL    );
 
       Type(final JavaType javaType) {
         this.javaType = javaType;
@@ -1201,7 +1202,8 @@ public final class Descriptors {
       BYTE_STRING(ByteString.EMPTY),
       ENUM(null),
       MESSAGE(null),
-      DATETIME(null);
+      DATETIME(null),
+      DECIMAL(null);
 
       JavaType(final Object defaultDefault) {
         this.defaultDefault = defaultDefault;
@@ -1214,7 +1216,7 @@ public final class Descriptors {
       private final Object defaultDefault;
 
       public boolean isMessageType() {
-        return this == MESSAGE || this == DATETIME;
+        return this == MESSAGE || this == DATETIME || this == DECIMAL;
       }
     }
 
@@ -1466,6 +1468,7 @@ public final class Descriptors {
             case MESSAGE:
             case GROUP:
             case DATETIME:
+            case DECIMAL:
               throw new DescriptorValidationException(this,
                 "Message type had default value.");
           }
@@ -1487,6 +1490,7 @@ public final class Descriptors {
               break;
             case MESSAGE:
             case DATETIME:
+            case DECIMAL:
               defaultValue = null;
               break;
             default:

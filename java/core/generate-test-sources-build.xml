@@ -46,6 +46,7 @@
         <arg value="${test.proto.dir}/com/google/protobuf/list/NestedMapDemo2.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/list/NestedMapDemo3.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/list/NestedMapDemo4.proto"/>
-        <arg value="${test.proto.dir}/com/google/protobuf/dotnettype/DateTimeDemo2.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/dotnettype/DateTimeDemo.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/dotnettype/DecimalDemo.proto"/>
     </exec>
 </project>

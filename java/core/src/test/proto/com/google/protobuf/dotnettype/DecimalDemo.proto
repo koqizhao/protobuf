@@ -5,8 +5,7 @@ option java_package = "com.google.protobuf.dotnettype";
 
 import "dotnettype.proto";
 
-message DateTimeDemo2 {
+message DecimalDemo {
     required string title = 1;
-    required DateTime dateTimeValue = 2;
+    required Decimal decimalValue = 2;
 }
-

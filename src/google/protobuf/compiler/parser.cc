@@ -80,7 +80,8 @@ TypeNameMap MakeTypeNameTable() {
   result["sint32"  ] = FieldDescriptorProto::TYPE_SINT32;
   result["sint64"  ] = FieldDescriptorProto::TYPE_SINT64;
 
-  result["DateTime"  ] = FieldDescriptorProto::TYPE_DATETIME;
+  result["DateTime"] = FieldDescriptorProto::TYPE_DATETIME;
+  result["Decimal" ] = FieldDescriptorProto::TYPE_DECIMAL;
 
   return result;
 }
@@ -1224,6 +1225,9 @@ bool Parser::ParseDefaultAssignment(
 
     case FieldDescriptorProto::TYPE_DATETIME:
       AddError("DateTime can't have default values.");
+      return false;
+    case FieldDescriptorProto::TYPE_DECIMAL:
+      AddError("Decimal can't have default values.");
       return false;
   }
 

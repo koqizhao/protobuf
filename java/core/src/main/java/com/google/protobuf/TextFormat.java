@@ -35,8 +35,10 @@ import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.dotnettype.DateTimes;
+import com.google.protobuf.dotnettype.Decimals;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
@@ -454,6 +456,9 @@ public final class TextFormat {
 
         case DATETIME:
           print(DateTimes.valueOf((Calendar) value), generator);
+          break;
+        case DECIMAL:
+          print(Decimals.valueOf((BigDecimal) value), generator);
           break;
       }
     }

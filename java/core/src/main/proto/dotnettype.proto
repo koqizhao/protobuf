@@ -10,13 +10,13 @@ option java_generate_equals_and_hash = true;
 option objc_class_prefix = "GPB";
 
 enum TimeSpanScale {
-    DAYS = 0;
-    HOURS = 1;
-    MINUTES = 2;
-    SECONDS = 3;
-    MILLISECONDS = 4;
-    TICKS = 5;
-    MINMAX = 15;
+  DAYS = 0;
+  HOURS = 1;
+  MINUTES = 2;
+  SECONDS = 3;
+  MILLISECONDS = 4;
+  TICKS = 5;
+  MINMAX = 15;
 }
 
 message DateTime {

@@ -1,11 +1,15 @@
 package com.google.protobuf.dotnettype;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.google.protobuf.dotnettype.DecimalDemoOuterClass.DecimalDemo;
 
 /**
  * @author koqizhao
@@ -38,15 +42,61 @@ public class DecimalTest {
   }
 
   @Test
+  public void serializerTest() throws IOException {
+    String[] testData = new String[] { "10.01", "100000000000000000", "0.99999999999999999999", "-99.1",
+        "-0.0000000000000000000000000001", "0" };
+    for (String expected : testData) {
+      serializerTest(new BigDecimal(expected));
+    }
+  }
+
+  private void serializerTest(BigDecimal bigDecimal) throws IOException {
+    DecimalDemo expected = DecimalDemo.newBuilder().setTitle("test").setDecimalValue(bigDecimal).build();
+
+    byte[] bytes = null;
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    try {
+      expected.writeTo(os);
+      bytes = os.toByteArray();
+      System.out.println("bytes length: " + bytes.length);
+    } finally {
+      os.close();
+    }
+
+    System.out.println();
+
+    DecimalDemo actual;
+    ByteArrayInputStream is = new ByteArrayInputStream(bytes);
+    try {
+      actual = DecimalDemo.parseFrom(is);
+    } finally {
+      is.close();
+    }
+
+    System.out.println("Expected: ");
+    System.out.println(expected);
+    System.out.println(bigDecimal);
+    System.out.println();
+
+    System.out.println("Actual: ");
+    System.out.println(actual);
+    System.out.println(actual.getDecimalValue());
+    System.out.println();
+
+    Assert.assertEquals(expected, actual);
+    Assert.assertEquals(bigDecimal, actual.getDecimalValue());
+  }
+
+  @Test
   public void serializationTestForDotnetInput() throws IOException {
     BigDecimal actual;
     InputStream is = null;
     try {
       is = DecimalTest.class.getResourceAsStream("decimalOfFloat01.bin");
       DecimalDemo demo = DecimalDemo.parseFrom(is);
-      System.out.println(demo.getDecimalValue());
-      actual = Decimals.bigDecimalValue(demo.getDecimalValue());
-      System.out.println(actual);
+      actual = demo.getDecimalValue();
+      System.out.println(demo);
+      System.out.println(Decimals.valueOf(actual));
       System.out.println();
     } finally {
       if (is != null)

@@ -465,8 +465,9 @@ class LIBPROTOBUF_EXPORT FieldDescriptor {
     TYPE_SINT32         = 17,  // int32, ZigZag-encoded varint on the wire
     TYPE_SINT64         = 18,  // int64, ZigZag-encoded varint on the wire
     TYPE_DATETIME       = 19,  // DateTime
+    TYPE_DECIMAL        = 20,  // Decimal
 
-    MAX_TYPE            = 19,  // Constant useful for defining lookup tables
+    MAX_TYPE            = 20,  // Constant useful for defining lookup tables
                                // indexed by Type.
   };
 
@@ -484,9 +485,10 @@ class LIBPROTOBUF_EXPORT FieldDescriptor {
     CPPTYPE_ENUM        = 8,     // TYPE_ENUM
     CPPTYPE_STRING      = 9,     // TYPE_STRING, TYPE_BYTES
     CPPTYPE_MESSAGE     = 10,    // TYPE_MESSAGE, TYPE_GROUP
-    CPPTYPE_DATETIME     = 11,    // TYPE_DATETIME
+    CPPTYPE_DATETIME    = 11,    // TYPE_DATETIME
+    CPPTYPE_DECIMAL     = 12,    // TYPE_DECIMAL
 
-    MAX_CPPTYPE         = 11,    // Constant useful for defining lookup tables
+    MAX_CPPTYPE         = 12,    // Constant useful for defining lookup tables
                                  // indexed by CppType.
   };
 

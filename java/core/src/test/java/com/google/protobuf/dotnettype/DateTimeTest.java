@@ -12,7 +12,7 @@ import java.util.GregorianCalendar;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.google.protobuf.dotnettype.DateTimeDemo2OuterClass.DateTimeDemo2;
+import com.google.protobuf.dotnettype.DateTimeDemoOuterClass.DateTimeDemo;
 
 /**
  * @author koqizhao
@@ -60,7 +60,7 @@ public class DateTimeTest {
   }
 
   private void serializerTest(Calendar calendar) throws IOException {
-    DateTimeDemo2 expected = DateTimeDemo2.newBuilder().setTitle("test").setDateTimeValue(calendar).build();
+    DateTimeDemo expected = DateTimeDemo.newBuilder().setTitle("test").setDateTimeValue(calendar).build();
 
     byte[] bytes = null;
     ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -74,10 +74,10 @@ public class DateTimeTest {
 
     System.out.println();
 
-    DateTimeDemo2 actual;
+    DateTimeDemo actual;
     ByteArrayInputStream is = new ByteArrayInputStream(bytes);
     try {
-      actual = DateTimeDemo2.parseFrom(is);
+      actual = DateTimeDemo.parseFrom(is);
     } finally {
       is.close();
     }
@@ -119,7 +119,7 @@ public class DateTimeTest {
     InputStream is = null;
     try {
       is = DateTimeTest.class.getResourceAsStream(dotnetBinFile);
-      DateTimeDemo2 demo = DateTimeDemo2.parseFrom(is);
+      DateTimeDemo demo = DateTimeDemo.parseFrom(is);
       actual = demo.getDateTimeValue();
     } finally {
       if (is != null)

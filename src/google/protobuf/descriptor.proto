@@ -152,7 +152,8 @@ message FieldDescriptorProto {
     TYPE_SINT32         = 17;  // Uses ZigZag encoding.
     TYPE_SINT64         = 18;  // Uses ZigZag encoding.
 
-    TYPE_DATETIME         = 19;  // Uses ZigZag encoding.
+    TYPE_DATETIME       = 19;
+    TYPE_DECIMAL        = 20;
   };
 
   enum Label {
