@@ -36,7 +36,11 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
+
+import com.google.protobuf.dotnettype.DateTime;
+import com.google.protobuf.dotnettype.DateTimes;
 
 /**
  * Reads and decodes protocol message fields.
@@ -1298,5 +1302,10 @@ public final class CodedInputStream {
     }
 
     bufferPos = size - pos;
+  }
+
+  public Calendar readDateTime() throws IOException {
+    DateTime dateTime = readMessage(DateTime.parser(), ExtensionRegistry.getEmptyRegistry());
+    return DateTimes.toCalendar(dateTime);
   }
 }

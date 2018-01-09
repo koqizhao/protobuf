@@ -33,12 +33,15 @@ package com.google.protobuf;
 import static java.lang.Math.max;
 
 import com.google.protobuf.Utf8.UnpairedSurrogateException;
+import com.google.protobuf.dotnettype.DateTime;
+import com.google.protobuf.dotnettype.DateTimes;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -383,6 +386,10 @@ public abstract class CodedOutputStream extends ByteOutput {
   public abstract void writeRawMessageSetExtension(final int fieldNumber, final ByteString value)
       throws IOException;
 
+  // Abstract to avoid overhead of additional virtual method calls.
+  public abstract void writeDateTime(final int fieldNumber, final Calendar value)
+      throws IOException;
+
   // -----------------------------------------------------------------
 
   /** Write an {@code int32} field to the stream. */
@@ -689,6 +696,12 @@ public abstract class CodedOutputStream extends ByteOutput {
     return computeTagSize(WireFormat.MESSAGE_SET_ITEM) * 2
         + computeUInt32Size(WireFormat.MESSAGE_SET_TYPE_ID, fieldNumber)
         + computeLazyFieldSize(WireFormat.MESSAGE_SET_MESSAGE, value);
+  }
+  
+  public static int computeDateTimeSize(
+      final int fieldNumber, final Calendar value) {
+    DateTime dateTime = DateTimes.valueOf(value);
+    return computeMessageSize(fieldNumber, dateTime);
   }
 
   // -----------------------------------------------------------------
@@ -1278,6 +1291,12 @@ public abstract class CodedOutputStream extends ByteOutput {
     }
 
     @Override
+    public void writeDateTime(int fieldNumber, Calendar value) throws IOException {
+      DateTime dateTime = DateTimes.valueOf(value);
+      writeMessage(fieldNumber, dateTime);
+    }
+
+    @Override
     public final void writeMessageNoTag(final MessageLite value) throws IOException {
       writeUInt32NoTag(value.getSerializedSize());
       value.writeTo(this);
@@ -1618,6 +1637,12 @@ public abstract class CodedOutputStream extends ByteOutput {
     }
 
     @Override
+    public void writeDateTime(int fieldNumber, Calendar value) throws IOException {
+      DateTime dateTime = DateTimes.valueOf(value);
+      writeMessage(fieldNumber, dateTime);
+    }
+
+    @Override
     public void writeMessageNoTag(final MessageLite value) throws IOException {
       writeUInt32NoTag(value.getSerializedSize());
       value.writeTo(this);
@@ -1812,6 +1837,7 @@ public abstract class CodedOutputStream extends ByteOutput {
         throw new OutOfSpaceException(e);
       }
     }
+
   }
 
   /**
@@ -2121,6 +2147,12 @@ public abstract class CodedOutputStream extends ByteOutput {
     }
 
     @Override
+    public void writeDateTime(int fieldNumber, Calendar value) throws IOException {
+      DateTime dateTime = DateTimes.valueOf(value);
+      writeMessage(fieldNumber, dateTime);
+    }
+
+    @Override
     public void writeMessageNoTag(final MessageLite value) throws IOException {
       writeUInt32NoTag(value.getSerializedSize());
       value.writeTo(this);
@@ -2424,6 +2456,12 @@ public abstract class CodedOutputStream extends ByteOutput {
     }
 
     @Override
+    public void writeDateTime(int fieldNumber, Calendar value) throws IOException {
+      DateTime dateTime = DateTimes.valueOf(value);
+      writeMessage(fieldNumber, dateTime);
+    }
+
+    @Override
     public void writeMessageNoTag(final MessageLite value) throws IOException {
       writeUInt32NoTag(value.getSerializedSize());
       value.writeTo(this);
@@ -2631,5 +2669,6 @@ public abstract class CodedOutputStream extends ByteOutput {
       out.write(buffer, 0, position);
       position = 0;
     }
+
   }
 }
