@@ -93,6 +93,7 @@ WireFormatLite::kFieldTypeToCppTypeMap[MAX_FIELD_TYPE + 1] = {
   CPPTYPE_INT64,    // TYPE_SFIXED64
   CPPTYPE_INT32,    // TYPE_SINT32
   CPPTYPE_INT64,    // TYPE_SINT64
+  CPPTYPE_DATETIME, // TYPE_DATETIME
 };
 
 const WireFormatLite::WireType
@@ -116,6 +117,7 @@ WireFormatLite::kWireTypeForFieldType[MAX_FIELD_TYPE + 1] = {
   WireFormatLite::WIRETYPE_FIXED64,           // TYPE_SFIXED64
   WireFormatLite::WIRETYPE_VARINT,            // TYPE_SINT32
   WireFormatLite::WIRETYPE_VARINT,            // TYPE_SINT64
+  WireFormatLite::WIRETYPE_LENGTH_DELIMITED,  // TYPE_DATETIME
 };
 
 bool WireFormatLite::SkipField(

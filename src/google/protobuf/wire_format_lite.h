@@ -112,7 +112,8 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
     TYPE_SFIXED64       = 16,
     TYPE_SINT32         = 17,
     TYPE_SINT64         = 18,
-    MAX_FIELD_TYPE      = 18,
+    TYPE_DATETIME       = 19,
+    MAX_FIELD_TYPE      = 19,
   };
 
   // Lite alternative to FieldDescriptor::CppType.  Must be kept in sync.
@@ -127,7 +128,8 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
     CPPTYPE_ENUM        = 8,
     CPPTYPE_STRING      = 9,
     CPPTYPE_MESSAGE     = 10,
-    MAX_CPPTYPE         = 10,
+    CPPTYPE_DATETIME    = 11,
+    MAX_CPPTYPE         = 11,
   };
 
   // Helper method to get the CppType for a particular Type.

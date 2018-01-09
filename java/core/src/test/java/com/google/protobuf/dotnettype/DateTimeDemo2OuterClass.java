@@ -91,7 +91,7 @@ public final class DateTimeDemo2OuterClass {
               title_ = bs;
               break;
             }
-            case 16: {
+            case 18: {
               bitField0_ |= 0x00000002;
               dateTimeValue_ = input.readDateTime();
               break;
