@@ -835,13 +835,13 @@ public final class CodedInputStream {
 
   /** Read a dotnet DateTime from the stream. */
   public Calendar readDateTime() throws IOException {
-    DateTime dateTime = readMessage(DateTime.parser(), ExtensionRegistry.getEmptyRegistry());
+    DateTime dateTime = readMessage(DateTime.parser(), ExtensionRegistryLite.getEmptyRegistry());
     return DateTimes.toCalendar(dateTime);
   }
 
   /** Read a dotnet decimal from the stream. */
   public BigDecimal readDecimal() throws IOException {
-    Decimal decimal = readMessage(Decimal.parser(), ExtensionRegistry.getEmptyRegistry());
+    Decimal decimal = readMessage(Decimal.parser(), ExtensionRegistryLite.getEmptyRegistry());
     return Decimals.bigDecimalValue(decimal);
   }
 
