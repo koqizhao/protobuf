@@ -6289,6 +6289,10 @@ void DescriptorBuilder::LogUnusedDependency(const FileDescriptorProto& proto,
       }
       // Log warnings for unused imported files.
       if (i == (*it)->extension_count()) {
+        if ((*it)->name() == "dotnettype.proto") {
+          continue;
+        }
+
         string error_message = "Import " + (*it)->name() + " but not used.";
         AddWarning((*it)->name(), proto, DescriptorPool::ErrorCollector::OTHER,
                    error_message);
