@@ -265,7 +265,7 @@ public class JsonFormat {
      * Parses from JSON into a protobuf message.
      *
      * @throws InvalidProtocolBufferException if the input is not valid JSON
-     *         format or there are unknown fields in the input.
+     *         format
      */
     public void merge(String json, Message.Builder builder) throws InvalidProtocolBufferException {
       // TODO(xiaofeng): Investigate the allocation overhead and optimize for
@@ -277,7 +277,7 @@ public class JsonFormat {
      * Parses from JSON into a protobuf message.
      *
      * @throws InvalidProtocolBufferException if the input is not valid JSON
-     *         format or there are unknown fields in the input.
+     *         format
      * @throws IOException if reading from the input throws.
      */
     public void merge(Reader json, Message.Builder builder) throws IOException {
@@ -1221,11 +1221,7 @@ public class JsonFormat {
         }
         FieldDescriptor field = fieldNameMap.get(entry.getKey());
         if (field == null) {
-          throw new InvalidProtocolBufferException(
-              "Cannot find field: "
-                  + entry.getKey()
-                  + " in message "
-                  + builder.getDescriptorForType().getFullName());
+          continue;
         }
         mergeField(field, entry.getValue(), builder);
       }
@@ -1426,6 +1422,7 @@ public class JsonFormat {
      * language defaults and ignore any default values set through the
      * proto "default" option.
      */
+    @SuppressWarnings("unused")
     private Object getDefaultValue(FieldDescriptor field, Message.Builder builder) {
       switch (field.getType()) {
         case INT32:
