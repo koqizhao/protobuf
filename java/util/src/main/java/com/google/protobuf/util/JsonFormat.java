@@ -49,6 +49,8 @@ import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
+import com.google.protobuf.dotnettype.DateTimes;
+import com.google.protobuf.dotnettype.Decimals;
 import com.google.protobuf.DoubleValue;
 import com.google.protobuf.Duration;
 import com.google.protobuf.DynamicMessage;
@@ -74,14 +76,20 @@ import java.io.StringReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Utility classes to convert protobuf messages to/from JSON format. The JSON
@@ -93,7 +101,10 @@ import java.util.logging.Logger;
  * as well.
  */
 public class JsonFormat {
+
   private static final Logger logger = Logger.getLogger(JsonFormat.class.getName());
+
+  protected static final String STANDARD_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
 
   private JsonFormat() {}
 
@@ -533,6 +544,17 @@ public class JsonFormat {
         return;
       }
       print(message, null);
+    }
+
+    void print(Calendar calendar) throws IOException {
+      SimpleDateFormat dateFormat = new SimpleDateFormat(STANDARD_DATE_FORMAT);
+      dateFormat.setTimeZone(calendar.getTimeZone());
+      String dateTimeString = dateFormat.format(calendar.getTime());
+      generator.print("\"" + dateTimeString + "\"");
+    }
+
+    void print(BigDecimal decimal) throws IOException {
+      generator.print("\"" + decimal.toString() + "\"");
     }
 
     private interface WellKnownTypePrinter {
@@ -989,6 +1011,14 @@ public class JsonFormat {
         case GROUP:
           print((Message) value);
           break;
+
+        case DATETIME:
+          print((Calendar) value);
+          break;
+
+        case DECIMAL:
+          print((BigDecimal) value);
+          break;
       }
     }
   }
@@ -1425,6 +1455,10 @@ public class JsonFormat {
         case MESSAGE:
         case GROUP:
           return builder.newBuilderForField(field).getDefaultInstanceForType();
+        case DATETIME:
+          return DateTimes.defaultCalendar();
+        case DECIMAL:
+          return Decimals.defaultBigDecimal();
         default:
           throw new IllegalStateException("Invalid field type: " + field.getType());
       }
@@ -1599,6 +1633,24 @@ public class JsonFormat {
       }
     }
 
+    private Calendar parseDateTime(JsonElement json) throws InvalidProtocolBufferException {
+      try {
+        String value = json.getAsString();
+        SimpleDateFormat dateFormat = new SimpleDateFormat(STANDARD_DATE_FORMAT);
+        Date date = dateFormat.parse(value);
+        TimeZone timeZone = StandardDateFormatTimeZoneParser.INSTANCE.parse(value);
+        Calendar calendar = Calendar.getInstance(timeZone);
+        calendar.setTime(date);
+        return calendar;
+      } catch (ParseException ex) {
+        throw new InvalidProtocolBufferException("Not a DateTime value: " + json);
+      }
+    }
+
+    private BigDecimal parseDecimal(JsonElement json) {
+      return new BigDecimal(json.getAsString());
+    }
+
     private String parseString(JsonElement json) {
       return json.getAsString();
     }
@@ -1698,9 +1750,54 @@ public class JsonFormat {
           merge(json, subBuilder);
           return subBuilder.build();
 
+        case DATETIME:
+          return parseDateTime(json);
+
+        case DECIMAL:
+          return parseDecimal(json);
+
         default:
           throw new InvalidProtocolBufferException("Invalid field type: " + field.getType());
       }
     }
+    
+    protected static class StandardDateFormatTimeZoneParser {
+
+      private static final String DEFAULT_TIME_ZONE_FORMAT = "((\\+|-)\\d{2}:\\d{2})|Z";
+      private static final Pattern DEFAULT_TIME_ZONE_PATTERN = Pattern.compile(DEFAULT_TIME_ZONE_FORMAT);
+      private static final int VALUE_LENGTH = "yyyy-MM-ddTHH:mm:ss.SSS".length();
+
+      public static final StandardDateFormatTimeZoneParser INSTANCE = new StandardDateFormatTimeZoneParser();
+
+      private StandardDateFormatTimeZoneParser() {
+
+      }
+
+      public TimeZone parse(String value) {
+        if (value == null || value.trim().isEmpty())
+          return TimeZone.getDefault();
+
+        if (value.length() <= VALUE_LENGTH)
+          return TimeZone.getDefault();
+
+        value = value.substring(VALUE_LENGTH);
+        TimeZone timeZone;
+
+        Matcher matcher = DEFAULT_TIME_ZONE_PATTERN.matcher(value);
+        if (!matcher.matches())
+          timeZone = TimeZone.getTimeZone(value);
+        else if (value.equals("Z") || value.equals("+00:00") || value.equals("-00:00"))
+          timeZone = TimeZone.getTimeZone("UTC");
+        else
+          timeZone = TimeZone.getTimeZone("GMT" + value);
+
+        if (timeZone.getRawOffset() == TimeZone.getDefault().getRawOffset())
+          return TimeZone.getDefault();
+
+        return timeZone;
+      }
+
+    }
+
   }
 }
