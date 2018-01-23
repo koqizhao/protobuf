@@ -60,7 +60,6 @@ import com.google.protobuf.Int32Value;
 import com.google.protobuf.Int64Value;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
-import com.google.protobuf.MapEntry;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.NullValue;
@@ -850,7 +849,7 @@ public class JsonFormat {
       FieldDescriptor keyField = null;
       FieldDescriptor valueField = null;
       for (Object element : (List) value) {
-        MapEntry entry = (MapEntry) element;
+        Message entry = (Message) element;
         if (printedElement) {
           generator.print("," + blankOrNewLine);
         } else {
@@ -868,7 +867,7 @@ public class JsonFormat {
         // Key fields are always double-quoted.
         printSingleFieldValue(keyField, entryKey, true);
         generator.print(":" + blankOrSpace);
-        if (entry.isNested())
+        if (valueField.isRepeated())
           printMapFieldValue(valueField, entryValue);
         else
           printSingleFieldValue(valueField, entryValue);
@@ -1399,7 +1398,6 @@ public class JsonFormat {
       }
     }
 
-    @SuppressWarnings("rawtypes")
     private void mergeMapField(FieldDescriptor field, JsonElement json, Message.Builder builder)
         throws InvalidProtocolBufferException {
       if (!(json instanceof JsonObject)) {
@@ -1410,7 +1408,7 @@ public class JsonFormat {
       FieldDescriptor valueField = null;
       JsonObject object = (JsonObject) json;
       for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
-        MapEntry.Builder entryBuilder = (MapEntry.Builder) builder.newBuilderForField(field);
+        Message.Builder entryBuilder = builder.newBuilderForField(field);
         if (keyField == null) {
           Descriptor type = entryBuilder.getDescriptorForType();
           keyField = type.findFieldByName("key");
@@ -1423,7 +1421,7 @@ public class JsonFormat {
         Object key = parseFieldValue(keyField, new JsonPrimitive(entry.getKey()), entryBuilder);
         entryBuilder.setField(keyField, key);
 
-        if (entryBuilder.isNested())
+        if (valueField.isRepeated())
           mergeMapField(valueField, entry.getValue(), entryBuilder);
         else {
           Object value = parseFieldValue(valueField, entry.getValue(), entryBuilder);
