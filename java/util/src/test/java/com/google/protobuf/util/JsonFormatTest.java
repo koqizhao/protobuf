@@ -975,18 +975,13 @@ public class JsonFormatTest extends TestCase {
   }
 
   public void testParserUnexpectedTypeUrl() throws Exception {
-    try {
-      TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-      mergeFromJson(
-          "{\n"
-              + "  \"@type\": \"type.googleapis.com/json_test.TestAllTypes\",\n"
-              + "  \"optionalInt32\": 12345\n"
-              + "}",
-          builder);
-      fail("Exception is expected.");
-    } catch (IOException e) {
-      // Expected.
-    }
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    mergeFromJson(
+        "{\n"
+            + "  \"@type\": \"type.googleapis.com/json_test.TestAllTypes\",\n"
+            + "  \"optionalInt32\": 12345\n"
+            + "}",
+        builder);
   }
 
   public void testParserRejectTrailingComma() throws Exception {
