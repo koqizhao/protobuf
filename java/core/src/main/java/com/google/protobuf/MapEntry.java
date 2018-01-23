@@ -438,14 +438,14 @@ public final class MapEntry<K, V> extends AbstractMessage {
     @Override
     public Builder<K, V> setRepeatedField(FieldDescriptor field, int index,
         Object value) {
-      List values = (List) value;
+      List values = (List) this.value;
       values.set(index, value);
       return this;
     }
 
     @Override
     public Builder<K, V> addRepeatedField(FieldDescriptor field, Object value) {
-      List values = (List) value;
+      List values = (List) this.value;
       values.add(value);
       return this;
     }

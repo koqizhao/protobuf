@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -11,6 +13,7 @@ import org.junit.Test;
 import com.google.protobuf.dotnettype.DateTimeDemoOuterClass.DateTimeDemo;
 import com.google.protobuf.dotnettype.DateTimes;
 import com.google.protobuf.dotnettype.DecimalDemoOuterClass.DecimalDemo;
+import com.google.protobuf.list.NestedMapDemo;
 
 /**
  * @author koqizhao
@@ -71,6 +74,34 @@ public class MoreJsonFormatTest {
     DecimalDemo.Builder builder = DecimalDemo.newBuilder();
     JsonFormat.parser().merge(os, builder);
     DecimalDemo actual = builder.build();
+
+    System.out.println("Expected: ");
+    System.out.println(expected);
+    System.out.println();
+
+    System.out.println("Actual: ");
+    System.out.println(actual);
+    System.out.println();
+
+    Assert.assertEquals(expected, actual);
+  }
+
+  @Test
+  public void serializerTestForNestedMap() throws IOException {
+    Map<String, String> mapValue = new HashMap<String, String>();
+    mapValue.put("ok1", "ok1_value");
+    mapValue.put("ok2", "ok2_value");
+    NestedMapDemo expected = NestedMapDemo.newBuilder().setTitle("ok").setUrl("http://test").addSnippets("ok")
+        .putMetadata(1, mapValue).build();
+    System.out.println(expected);
+
+    String os = JsonFormat.printer().includingDefaultValueFields().preservingProtoFieldNames().print(expected);
+    System.out.println(os);
+    System.out.println();
+
+    NestedMapDemo.Builder builder = NestedMapDemo.newBuilder();
+    JsonFormat.parser().merge(os, builder);
+    NestedMapDemo actual = builder.build();
 
     System.out.println("Expected: ");
     System.out.println(expected);

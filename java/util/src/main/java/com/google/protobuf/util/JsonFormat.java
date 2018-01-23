@@ -60,6 +60,7 @@ import com.google.protobuf.Int32Value;
 import com.google.protobuf.Int64Value;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
+import com.google.protobuf.MapEntry;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.NullValue;
@@ -843,28 +844,34 @@ public class JsonFormat {
 
     @SuppressWarnings("rawtypes")
     private void printMapFieldValue(FieldDescriptor field, Object value) throws IOException {
-      Descriptor type = field.getMessageType();
-      FieldDescriptor keyField = type.findFieldByName("key");
-      FieldDescriptor valueField = type.findFieldByName("value");
-      if (keyField == null || valueField == null) {
-        throw new InvalidProtocolBufferException("Invalid map field.");
-      }
       generator.print("{" + blankOrNewLine);
       generator.indent();
       boolean printedElement = false;
+      FieldDescriptor keyField = null;
+      FieldDescriptor valueField = null;
       for (Object element : (List) value) {
-        Message entry = (Message) element;
-        Object entryKey = entry.getField(keyField);
-        Object entryValue = entry.getField(valueField);
+        MapEntry entry = (MapEntry) element;
         if (printedElement) {
           generator.print("," + blankOrNewLine);
         } else {
+          Descriptor type = entry.getDescriptorForType();
+          keyField = type.findFieldByName("key");
+          valueField = type.findFieldByName("value");
+          if (keyField == null || valueField == null) {
+            throw new InvalidProtocolBufferException("Invalid map field.");
+          }
+
           printedElement = true;
         }
+        Object entryKey = entry.getField(keyField);
+        Object entryValue = entry.getField(valueField);
         // Key fields are always double-quoted.
         printSingleFieldValue(keyField, entryKey, true);
         generator.print(":" + blankOrSpace);
-        printSingleFieldValue(valueField, entryValue);
+        if (entry.isNested())
+          printMapFieldValue(valueField, entryValue);
+        else
+          printSingleFieldValue(valueField, entryValue);
       }
       if (printedElement) {
         generator.print(blankOrNewLine);
@@ -1392,27 +1399,41 @@ public class JsonFormat {
       }
     }
 
+    @SuppressWarnings("rawtypes")
     private void mergeMapField(FieldDescriptor field, JsonElement json, Message.Builder builder)
         throws InvalidProtocolBufferException {
       if (!(json instanceof JsonObject)) {
         throw new InvalidProtocolBufferException("Expect a map object but found: " + json);
       }
-      Descriptor type = field.getMessageType();
-      FieldDescriptor keyField = type.findFieldByName("key");
-      FieldDescriptor valueField = type.findFieldByName("value");
-      if (keyField == null || valueField == null) {
-        throw new InvalidProtocolBufferException("Invalid map field: " + field.getFullName());
-      }
+
+      FieldDescriptor keyField = null;
+      FieldDescriptor valueField = null;
       JsonObject object = (JsonObject) json;
       for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
-        Message.Builder entryBuilder = builder.newBuilderForField(field);
-        Object key = parseFieldValue(keyField, new JsonPrimitive(entry.getKey()), entryBuilder);
-        Object value = parseFieldValue(valueField, entry.getValue(), entryBuilder);
-        if (value == null) {
-          throw new InvalidProtocolBufferException("Map value cannot be null.");
+        MapEntry.Builder entryBuilder = (MapEntry.Builder) builder.newBuilderForField(field);
+        if (keyField == null) {
+          Descriptor type = entryBuilder.getDescriptorForType();
+          keyField = type.findFieldByName("key");
+          valueField = type.findFieldByName("value");
+          if (keyField == null || valueField == null) {
+            throw new InvalidProtocolBufferException("Invalid map field: " + field.getFullName());
+          }
         }
+
+        Object key = parseFieldValue(keyField, new JsonPrimitive(entry.getKey()), entryBuilder);
         entryBuilder.setField(keyField, key);
-        entryBuilder.setField(valueField, value);
+
+        if (entryBuilder.isNested())
+          mergeMapField(valueField, entry.getValue(), entryBuilder);
+        else {
+          Object value = parseFieldValue(valueField, entry.getValue(), entryBuilder);
+          if (value == null) {
+            throw new InvalidProtocolBufferException("Map value cannot be null.");
+          }
+
+          entryBuilder.setField(valueField, value);
+        }
+
         builder.addRepeatedField(field, entryBuilder.build());
       }
     }
