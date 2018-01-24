@@ -32,6 +32,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_mset.pb.h>
@@ -46,7 +48,6 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/stl_util.h>
@@ -331,7 +332,7 @@ TEST(ExtensionSetTest, SwapExtension) {
   unittest::TestAllExtensions message2;
 
   TestUtil::SetAllExtensions(&message1);
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
 
   // Swap empty fields.
   const Reflection* reflection = message1.GetReflection();
@@ -363,7 +364,7 @@ TEST(ExtensionSetTest, SwapExtensionWithEmpty) {
   TestUtil::SetAllExtensions(&message3);
 
   const Reflection* reflection = message3.GetReflection();
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(message3, &fields);
 
   reflection->SwapFields(&message1, &message2, fields);
@@ -380,7 +381,7 @@ TEST(ExtensionSetTest, SwapExtensionBothFull) {
   TestUtil::SetAllExtensions(&message2);
 
   const Reflection* reflection = message1.GetReflection();
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(message1, &fields);
 
   reflection->SwapFields(&message1, &message2, fields);
@@ -490,7 +491,7 @@ TEST(ExtensionSetTest, SwapFieldsOfExtensionBothFullWithArena) {
   TestUtil::SetAllExtensions(message2);
 
   const Reflection* reflection = message1->GetReflection();
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(*message1, &fields);
   reflection->SwapFields(message1, message2, fields);
   TestUtil::ExpectAllExtensionsSet(*message1);
@@ -504,7 +505,7 @@ TEST(ExtensionSetTest, SwapExtensionWithSelf) {
 
   TestUtil::SetAllExtensions(&message1);
 
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   const Reflection* reflection = message1.GetReflection();
   reflection->ListFields(message1, &fields);
   reflection->SwapFields(&message1, &message1, fields);
@@ -791,12 +792,17 @@ TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
     message.AddExtension(unittest::repeated_##type##_extension, value);        \
     EXPECT_EQ(empty_repeated_field_size, message.SpaceUsed()) << #type;        \
     message.ClearExtension(unittest::repeated_##type##_extension);             \
+    const int old_capacity =                                                   \
+        message.GetRepeatedExtension(unittest::repeated_##type##_extension)    \
+        .Capacity();                                                           \
+    EXPECT_GE(old_capacity, kMinRepeatedFieldAllocationSize);                  \
     for (int i = 0; i < 16; ++i) {                                             \
       message.AddExtension(unittest::repeated_##type##_extension, value);      \
     }                                                                          \
-    int expected_size = sizeof(cpptype) * (16 -                                \
-        kMinRepeatedFieldAllocationSize) + empty_repeated_field_size;          \
-    EXPECT_EQ(expected_size, message.SpaceUsed()) << #type;                    \
+    int expected_size = sizeof(cpptype) *                                      \
+        (message.GetRepeatedExtension(unittest::repeated_##type##_extension)   \
+         .Capacity() - old_capacity) + empty_repeated_field_size;              \
+    EXPECT_LE(expected_size, message.SpaceUsed()) << #type;                    \
   } while (0)
 
   TEST_REPEATED_EXTENSIONS_SPACE_USED(int32   , int32 , 101);

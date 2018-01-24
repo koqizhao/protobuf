@@ -53,6 +53,7 @@
 #include <vector>
 
 #include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/unittest_no_arena.pb.h>
 #include <google/protobuf/unittest_optimize_for.pb.h>
 #include <google/protobuf/unittest_embed_optimize_for.pb.h>
 #if !defined(GOOGLE_PROTOBUF_CMAKE_BUILD) && !defined(_MSC_VER)
@@ -67,6 +68,7 @@
 #include <google/protobuf/compiler/importer.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/arena.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/dynamic_message.h>
@@ -74,7 +76,6 @@
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
@@ -129,12 +130,12 @@ TEST(GeneratedDescriptorTest, IdenticalDescriptors) {
 
   // Test that descriptors are generated correctly by converting them to
   // FileDescriptorProtos and comparing.
-  FileDescriptorProto generated_decsriptor_proto, parsed_descriptor_proto;
-  generated_descriptor->CopyTo(&generated_decsriptor_proto);
+  FileDescriptorProto generated_descriptor_proto, parsed_descriptor_proto;
+  generated_descriptor->CopyTo(&generated_descriptor_proto);
   parsed_descriptor->CopyTo(&parsed_descriptor_proto);
 
   EXPECT_EQ(parsed_descriptor_proto.DebugString(),
-            generated_decsriptor_proto.DebugString());
+            generated_descriptor_proto.DebugString());
 }
 
 #if !defined(GOOGLE_PROTOBUF_CMAKE_BUILD) && !defined(_MSC_VER)
@@ -199,14 +200,14 @@ TEST(GeneratedMessageTest, FloatingPointDefaults) {
   EXPECT_EQ(-1.5f, extreme_default.negative_float());
   EXPECT_EQ(2.0e8f, extreme_default.large_float());
   EXPECT_EQ(-8e-28f, extreme_default.small_negative_float());
-  EXPECT_EQ(numeric_limits<double>::infinity(),
+  EXPECT_EQ(std::numeric_limits<double>::infinity(),
             extreme_default.inf_double());
-  EXPECT_EQ(-numeric_limits<double>::infinity(),
+  EXPECT_EQ(-std::numeric_limits<double>::infinity(),
             extreme_default.neg_inf_double());
   EXPECT_TRUE(extreme_default.nan_double() != extreme_default.nan_double());
-  EXPECT_EQ(numeric_limits<float>::infinity(),
+  EXPECT_EQ(std::numeric_limits<float>::infinity(),
             extreme_default.inf_float());
-  EXPECT_EQ(-numeric_limits<float>::infinity(),
+  EXPECT_EQ(-std::numeric_limits<float>::infinity(),
             extreme_default.neg_inf_float());
   EXPECT_TRUE(extreme_default.nan_float() != extreme_default.nan_float());
 }
@@ -419,6 +420,71 @@ TEST(GeneratedMessageTest, StringCharStarLength) {
   EXPECT_EQ("wx", message.repeated_string(0));
 }
 
+#if LANG_CXX11
+TEST(GeneratedMessageTest, StringMove) {
+  // Verify that we trigger the move behavior on a scalar setter.
+  protobuf_unittest_no_arena::TestAllTypes message;
+  {
+    string tmp(32, 'a');
+
+    const char* old_data = tmp.data();
+    message.set_optional_string(std::move(tmp));
+    const char* new_data = message.optional_string().data();
+
+    EXPECT_EQ(old_data, new_data);
+    EXPECT_EQ(string(32, 'a'), message.optional_string());
+
+    string tmp2(32, 'b');
+    old_data = tmp2.data();
+    message.set_optional_string(std::move(tmp2));
+    new_data = message.optional_string().data();
+
+    EXPECT_EQ(old_data, new_data);
+    EXPECT_EQ(string(32, 'b'), message.optional_string());
+  }
+
+  // Verify that we trigger the move behavior on a oneof setter.
+  {
+    string tmp(32, 'a');
+
+    const char* old_data = tmp.data();
+    message.set_oneof_string(std::move(tmp));
+    const char* new_data = message.oneof_string().data();
+
+    EXPECT_EQ(old_data, new_data);
+    EXPECT_EQ(string(32, 'a'), message.oneof_string());
+
+    string tmp2(32, 'b');
+    old_data = tmp2.data();
+    message.set_oneof_string(std::move(tmp2));
+    new_data = message.oneof_string().data();
+
+    EXPECT_EQ(old_data, new_data);
+    EXPECT_EQ(string(32, 'b'), message.oneof_string());
+  }
+
+  // Verify that we trigger the move behavior on a repeated setter.
+  {
+    string tmp(32, 'a');
+
+    const char* old_data = tmp.data();
+    message.add_repeated_string(std::move(tmp));
+    const char* new_data = message.repeated_string(0).data();
+
+    EXPECT_EQ(old_data, new_data);
+    EXPECT_EQ(string(32, 'a'), message.repeated_string(0));
+
+    string tmp2(32, 'b');
+    old_data = tmp2.data();
+    message.set_repeated_string(0, std::move(tmp2));
+    new_data = message.repeated_string(0).data();
+
+    EXPECT_EQ(old_data, new_data);
+    EXPECT_EQ(string(32, 'b'), message.repeated_string(0));
+  }
+}
+#endif
+
 
 TEST(GeneratedMessageTest, CopyFrom) {
   unittest::TestAllTypes message1, message2;
@@ -510,12 +576,93 @@ TEST(GeneratedMessageTest, SwapWithOther) {
   EXPECT_EQ(unittest::TestAllTypes::BAR, message2.repeated_nested_enum(1));
 }
 
-TEST(GeneratedMessageTest, CopyConstructor) {
-  unittest::TestAllTypes message1;
+TEST(GeneratedMessageTest, ADLSwap) {
+  unittest::TestAllTypes message1, message2;
   TestUtil::SetAllFields(&message1);
 
-  unittest::TestAllTypes message2(message1);
+  // Note the address of one of the repeated fields, to verify it was swapped
+  // rather than copied.
+  const int32* addr = &message1.repeated_int32().Get(0);
+
+  using std::swap;
+  swap(message1, message2);
+
   TestUtil::ExpectAllFieldsSet(message2);
+  TestUtil::ExpectClear(message1);
+
+  EXPECT_EQ(addr, &message2.repeated_int32().Get(0));
+}
+
+TEST(GeneratedMessageTest, CopyConstructor) {
+  // All set.
+  {
+    unittest::TestAllTypes message1;
+    TestUtil::SetAllFields(&message1);
+
+    unittest::TestAllTypes message2(message1);
+    TestUtil::ExpectAllFieldsSet(message2);
+  }
+
+  // None set.
+  {
+    unittest::TestAllTypes message1;
+    unittest::TestAllTypes message2(message1);
+
+    EXPECT_FALSE(message1.has_optional_string());
+    EXPECT_FALSE(message2.has_optional_string());
+    EXPECT_EQ(&message1.optional_string(),
+              &message2.optional_string());
+
+    EXPECT_FALSE(message1.has_optional_bytes());
+    EXPECT_FALSE(message2.has_optional_bytes());
+    EXPECT_EQ(&message1.optional_bytes(),
+              &message2.optional_bytes());
+
+    EXPECT_FALSE(message1.has_optional_nested_message());
+    EXPECT_FALSE(message2.has_optional_nested_message());
+    EXPECT_EQ(&message1.optional_nested_message(),
+              &message2.optional_nested_message());
+
+    EXPECT_FALSE(message1.has_optional_foreign_message());
+    EXPECT_FALSE(message2.has_optional_foreign_message());
+    EXPECT_EQ(&message1.optional_foreign_message(),
+              &message2.optional_foreign_message());
+
+    EXPECT_FALSE(message1.has_optional_import_message());
+    EXPECT_FALSE(message2.has_optional_import_message());
+    EXPECT_EQ(&message1.optional_import_message(),
+              &message2.optional_import_message());
+
+    EXPECT_FALSE(message1.has_optional_public_import_message());
+    EXPECT_FALSE(message2.has_optional_public_import_message());
+    EXPECT_EQ(&message1.optional_public_import_message(),
+              &message2.optional_public_import_message());
+
+    EXPECT_FALSE(message1.has_optional_lazy_message());
+    EXPECT_FALSE(message2.has_optional_lazy_message());
+    EXPECT_EQ(&message1.optional_lazy_message(),
+              &message2.optional_lazy_message());
+  }
+}
+
+TEST(GeneratedMessageTest, CopyConstructorWithArenas) {
+  Arena arena;
+  unittest::TestAllTypes* message1 =
+      Arena::CreateMessage<unittest::TestAllTypes>(&arena);
+  TestUtil::SetAllFields(message1);
+
+  unittest::TestAllTypes message2_stack(*message1);
+  TestUtil::ExpectAllFieldsSet(message2_stack);
+
+  google::protobuf::scoped_ptr<unittest::TestAllTypes> message2_heap(
+      new unittest::TestAllTypes(*message1));
+  TestUtil::ExpectAllFieldsSet(*message2_heap);
+
+  arena.Reset();
+
+  // Verify that the copies are still intact.
+  TestUtil::ExpectAllFieldsSet(message2_stack);
+  TestUtil::ExpectAllFieldsSet(*message2_heap);
 }
 
 TEST(GeneratedMessageTest, CopyAssignmentOperator) {
@@ -597,19 +744,6 @@ TEST(GeneratedMessageTest, NonEmptyMergeFrom) {
   TestUtil::ExpectAllFieldsSet(message1);
 }
 
-#if !defined(PROTOBUF_TEST_NO_DESCRIPTORS) || \
-    !defined(GOOGLE_PROTOBUF_NO_RTTI)
-#ifdef PROTOBUF_HAS_DEATH_TEST
-
-TEST(GeneratedMessageTest, MergeFromSelf) {
-  unittest::TestAllTypes message;
-  EXPECT_DEATH(message.MergeFrom(message), "Check failed:.*pb[.]cc");
-  EXPECT_DEATH(message.MergeFrom(implicit_cast<const Message&>(message)),
-               "Check failed:.*pb[.]cc");
-}
-
-#endif  // PROTOBUF_HAS_DEATH_TEST
-#endif  // !PROTOBUF_TEST_NO_DESCRIPTORS || !GOOGLE_PROTOBUF_NO_RTTI
 
 // Test the generated SerializeWithCachedSizesToArray(),
 TEST(GeneratedMessageTest, SerializationToArray) {
@@ -861,75 +995,76 @@ TEST(GeneratedMessageTest, TestEmbedOptimizedForSize) {
 
 TEST(GeneratedMessageTest, TestSpaceUsed) {
   unittest::TestAllTypes message1;
-  // sizeof provides a lower bound on SpaceUsed().
-  EXPECT_LE(sizeof(unittest::TestAllTypes), message1.SpaceUsed());
-  const int empty_message_size = message1.SpaceUsed();
+  // sizeof provides a lower bound on SpaceUsedLong().
+  EXPECT_LE(sizeof(unittest::TestAllTypes), message1.SpaceUsedLong());
+  const size_t empty_message_size = message1.SpaceUsedLong();
 
   // Setting primitive types shouldn't affect the space used.
   message1.set_optional_int32(123);
   message1.set_optional_int64(12345);
   message1.set_optional_uint32(123);
   message1.set_optional_uint64(12345);
-  EXPECT_EQ(empty_message_size, message1.SpaceUsed());
+  EXPECT_EQ(empty_message_size, message1.SpaceUsedLong());
 
   // On some STL implementations, setting the string to a small value should
-  // only increase SpaceUsed() by the size of a string object, though this is
-  // not true everywhere.
+  // only increase SpaceUsedLong() by the size of a string object, though this
+  // is not true everywhere.
   message1.set_optional_string("abc");
-  EXPECT_LE(empty_message_size + sizeof(string), message1.SpaceUsed());
+  EXPECT_LE(empty_message_size + sizeof(string), message1.SpaceUsedLong());
 
   // Setting a string to a value larger than the string object itself should
-  // increase SpaceUsed(), because it cannot store the value internally.
+  // increase SpaceUsedLong(), because it cannot store the value internally.
   message1.set_optional_string(string(sizeof(string) + 1, 'x'));
   int min_expected_increase = message1.optional_string().capacity() +
       sizeof(string);
   EXPECT_LE(empty_message_size + min_expected_increase,
-            message1.SpaceUsed());
+            message1.SpaceUsedLong());
 
-  int previous_size = message1.SpaceUsed();
+  size_t previous_size = message1.SpaceUsedLong();
   // Adding an optional message should increase the size by the size of the
   // nested message type. NestedMessage is simple enough (1 int field) that it
   // is equal to sizeof(NestedMessage)
   message1.mutable_optional_nested_message();
   ASSERT_EQ(sizeof(unittest::TestAllTypes::NestedMessage),
-            message1.optional_nested_message().SpaceUsed());
+            message1.optional_nested_message().SpaceUsedLong());
   EXPECT_EQ(previous_size +
             sizeof(unittest::TestAllTypes::NestedMessage),
-            message1.SpaceUsed());
+            message1.SpaceUsedLong());
 }
 
 TEST(GeneratedMessageTest, TestOneofSpaceUsed) {
   unittest::TestOneof2 message1;
-  EXPECT_LE(sizeof(unittest::TestOneof2), message1.SpaceUsed());
+  EXPECT_LE(sizeof(unittest::TestOneof2), message1.SpaceUsedLong());
 
-  const int empty_message_size = message1.SpaceUsed();
+  const size_t empty_message_size = message1.SpaceUsedLong();
   // Setting primitive types shouldn't affect the space used.
   message1.set_foo_int(123);
   message1.set_bar_int(12345);
-  EXPECT_EQ(empty_message_size, message1.SpaceUsed());
+  EXPECT_EQ(empty_message_size, message1.SpaceUsedLong());
 
-  // Setting a string in oneof to a small value should only increase SpaceUsed()
-  // by the size of a string object.
+  // Setting a string in oneof to a small value should only increase
+  // SpaceUsedLong() by the size of a string object.
   message1.set_foo_string("abc");
-  EXPECT_LE(empty_message_size + sizeof(string), message1.SpaceUsed());
+  EXPECT_LE(empty_message_size + sizeof(string), message1.SpaceUsedLong());
 
   // Setting a string in oneof to a value larger than the string object itself
-  // should increase SpaceUsed(), because it cannot store the value internally.
+  // should increase SpaceUsedLong(), because it cannot store the value
+  // internally.
   message1.set_foo_string(string(sizeof(string) + 1, 'x'));
   int min_expected_increase = message1.foo_string().capacity() +
       sizeof(string);
   EXPECT_LE(empty_message_size + min_expected_increase,
-            message1.SpaceUsed());
+            message1.SpaceUsedLong());
 
   // Setting a message in oneof should delete the other fields and increase the
   // size by the size of the nested message type. NestedMessage is simple enough
   // that it is equal to sizeof(NestedMessage)
   message1.mutable_foo_message();
   ASSERT_EQ(sizeof(unittest::TestOneof2::NestedMessage),
-            message1.foo_message().SpaceUsed());
+            message1.foo_message().SpaceUsedLong());
   EXPECT_EQ(empty_message_size +
             sizeof(unittest::TestOneof2::NestedMessage),
-            message1.SpaceUsed());
+            message1.SpaceUsedLong());
 }
 
 #endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
@@ -1252,7 +1387,7 @@ class GeneratedServiceTest : public testing::Test {
       foo_(descriptor_->FindMethodByName("Foo")),
       bar_(descriptor_->FindMethodByName("Bar")),
       stub_(&mock_channel_),
-      done_(::google::protobuf::internal::NewPermanentCallback(&DoNothing)) {}
+      done_(::google::protobuf::NewPermanentCallback(&DoNothing)) {}
 
   virtual void SetUp() {
     ASSERT_TRUE(foo_ != NULL);
@@ -2071,6 +2206,61 @@ TEST_F(OneofTest, MergeFrom) {
   EXPECT_TRUE(message2.has_foogroup());
   EXPECT_EQ(message2.foogroup().a(), 345);
 
+}
+
+TEST(HelpersTest, TestSCC) {
+  protobuf_unittest::TestMutualRecursionA a;
+  SCCAnalyzer scc_analyzer((Options()));
+  const SCC* scc = scc_analyzer.GetSCC(a.GetDescriptor());
+  std::vector<string> names;
+  for (int i = 0; i < scc->descriptors.size(); i++) {
+    names.push_back(scc->descriptors[i]->full_name());
+  }
+  ASSERT_EQ(names.size(), 4);
+  std::sort(names.begin(), names.end());
+  EXPECT_EQ(names[0], "protobuf_unittest.TestMutualRecursionA");
+  EXPECT_EQ(names[1], "protobuf_unittest.TestMutualRecursionA.SubGroup");
+  EXPECT_EQ(names[2], "protobuf_unittest.TestMutualRecursionA.SubMessage");
+  EXPECT_EQ(names[3], "protobuf_unittest.TestMutualRecursionB");
+
+  MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
+  EXPECT_EQ(result.is_recursive, true);
+  EXPECT_EQ(result.contains_required, false);
+  EXPECT_EQ(result.contains_cord, true);  // TestAllTypes
+  EXPECT_EQ(result.contains_extension, false);  // TestAllTypes
+}
+
+TEST(HelpersTest, TestSCCAnalysis) {
+  {
+    protobuf_unittest::TestRecursiveMessage msg;
+    SCCAnalyzer scc_analyzer((Options()));
+    const SCC* scc = scc_analyzer.GetSCC(msg.GetDescriptor());
+    MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
+    EXPECT_EQ(result.is_recursive, true);
+    EXPECT_EQ(result.contains_required, false);
+    EXPECT_EQ(result.contains_cord, false);
+    EXPECT_EQ(result.contains_extension, false);
+  }
+  {
+    protobuf_unittest::TestAllExtensions msg;
+    SCCAnalyzer scc_analyzer((Options()));
+    const SCC* scc = scc_analyzer.GetSCC(msg.GetDescriptor());
+    MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
+    EXPECT_EQ(result.is_recursive, false);
+    EXPECT_EQ(result.contains_required, false);
+    EXPECT_EQ(result.contains_cord, false);
+    EXPECT_EQ(result.contains_extension, true);
+  }
+  {
+    protobuf_unittest::TestRequired msg;
+    SCCAnalyzer scc_analyzer((Options()));
+    const SCC* scc = scc_analyzer.GetSCC(msg.GetDescriptor());
+    MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
+    EXPECT_EQ(result.is_recursive, false);
+    EXPECT_EQ(result.contains_required, true);
+    EXPECT_EQ(result.contains_cord, false);
+    EXPECT_EQ(result.contains_extension, false);
+  }
 }
 
 }  // namespace cpp_unittest

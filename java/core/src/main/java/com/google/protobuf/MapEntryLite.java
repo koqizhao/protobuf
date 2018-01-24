@@ -260,4 +260,8 @@ public class MapEntryLite<K, V> {
     map.put(key, value);
   }
 
+  /** For experimental runtime internal use only. */
+  Metadata<K, V> getMetadata() {
+    return metadata;
+  }
 }

@@ -416,17 +416,18 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
                                                            uint8* target) const;
 
   // For backward-compatibility, versions of two of the above methods that
-  // are never forced to serialize deterministically.
+  // serialize deterministically iff SetDefaultSerializationDeterministic()
+  // has been called.
   uint8* SerializeWithCachedSizesToArray(int start_field_number,
                                          int end_field_number,
                                          uint8* target) const;
   uint8* SerializeMessageSetWithCachedSizesToArray(uint8* target) const;
 
   // Returns the total serialized size of all the extensions.
-  int ByteSize() const;
+  size_t ByteSize() const;
 
   // Like ByteSize() but uses MessageSet format.
-  int MessageSetByteSize() const;
+  size_t MessageSetByteSize() const;
 
   // Returns (an estimate of) the total number of bytes used for storing the
   // extensions in memory, excluding sizeof(*this).  If the ExtensionSet is
@@ -435,6 +436,13 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   // be linked in).  It's up to the protocol compiler to avoid calling this on
   // such ExtensionSets (easy enough since lite messages don't implement
   // SpaceUsed()).
+  size_t SpaceUsedExcludingSelfLong() const;
+
+  // This method just calls SpaceUsedExcludingSelfLong() but it can not be
+  // inlined because the definition of SpaceUsedExcludingSelfLong() is not
+  // included in lite runtime and when an inline method refers to it MSVC
+  // will complain about unresolved symbols when building the lite runtime
+  // as .dll.
   int SpaceUsedExcludingSelf() const;
 
  private:
@@ -457,7 +465,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
 
     virtual bool IsInitialized() const = 0;
     virtual int ByteSize() const = 0;
-    virtual int SpaceUsed() const = 0;
+    virtual size_t SpaceUsedLong() const = 0;
 
     virtual void MergeFrom(const LazyMessageExtension& other) = 0;
     virtual void Clear() = 0;
@@ -475,6 +483,8 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
     }
 
    private:
+    virtual void UnusedKeyMethod();  // Dummy key method to avoid weak vtable.
+
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(LazyMessageExtension);
   };
   struct Extension {
@@ -551,12 +561,12 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
         int number,
         bool deterministic,
         uint8* target) const;
-    int ByteSize(int number) const;
-    int MessageSetItemByteSize(int number) const;
+    size_t ByteSize(int number) const;
+    size_t MessageSetItemByteSize(int number) const;
     void Clear();
     int GetSize() const;
     void Free();
-    int SpaceUsedExcludingSelf() const;
+    size_t SpaceUsedExcludingSelfLong() const;
   };
   typedef std::map<int, Extension> ExtensionMap;
 
@@ -620,7 +630,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   //   class.
 
   // Defined in extension_set_heavy.cc.
-  static inline int RepeatedMessage_SpaceUsedExcludingSelf(
+  static inline size_t RepeatedMessage_SpaceUsedExcludingSelfLong(
       RepeatedPtrFieldBase* field);
 
   // The Extension struct is small enough to be passed by value, so we use it
@@ -689,6 +699,10 @@ inline void ExtensionSet::AddString(int number, FieldType type,
 //                                       ExtensionSet* set);
 //     static inline void Add(int number, ConstType value, ExtensionSet* set);
 //     static inline MutableType Add(int number, ExtensionSet* set);
+//     This is used by the ExtensionIdentifier constructor to register
+//     the extension at dynamic initialization.
+//     template <typename ExtendeeT>
+//     static void Register(int number, FieldType type, bool is_packed);
 //   };
 //
 // Not all of these methods make sense for all field types.  For example, the
@@ -720,6 +734,11 @@ class PrimitiveTypeTraits {
                               ConstType default_value);
   static inline void Set(int number, FieldType field_type,
                          ConstType value, ExtensionSet* set);
+  template <typename ExtendeeT>
+  static void Register(int number, FieldType type, bool is_packed) {
+    ExtensionSet::RegisterExtension(&ExtendeeT::default_instance(), number,
+                                    type, false, is_packed);
+  }
 };
 
 template <typename Type>
@@ -743,6 +762,11 @@ class RepeatedPrimitiveTypeTraits {
                       bool is_packed, ExtensionSet* set);
 
   static const RepeatedFieldType* GetDefaultRepeatedField();
+  template <typename ExtendeeT>
+  static void Register(int number, FieldType type, bool is_packed) {
+    ExtensionSet::RegisterExtension(&ExtendeeT::default_instance(), number,
+                                    type, true, is_packed);
+  }
 };
 
 LIBPROTOBUF_EXPORT extern ProtobufOnceType repeated_primitive_generic_type_traits_once_init_;
@@ -840,6 +864,11 @@ class LIBPROTOBUF_EXPORT StringTypeTraits {
                                 ExtensionSet* set) {
     return set->MutableString(number, field_type, NULL);
   }
+  template <typename ExtendeeT>
+  static void Register(int number, FieldType type, bool is_packed) {
+    ExtensionSet::RegisterExtension(&ExtendeeT::default_instance(), number,
+                                    type, false, is_packed);
+  }
 };
 
 LIBPROTOBUF_EXPORT extern ProtobufOnceType repeated_string_type_traits_once_init_;
@@ -892,6 +921,12 @@ class LIBPROTOBUF_EXPORT RepeatedStringTypeTraits {
     return default_repeated_field_;
   }
 
+  template <typename ExtendeeT>
+  static void Register(int number, FieldType type, bool is_packed) {
+    ExtensionSet::RegisterExtension(&ExtendeeT::default_instance(), number,
+                                    type, true, is_packed);
+  }
+
  private:
   static void InitializeDefaultRepeatedFields();
   static void DestroyDefaultRepeatedFields();
@@ -918,6 +953,11 @@ class EnumTypeTraits {
                          ConstType value, ExtensionSet* set) {
     GOOGLE_DCHECK(IsValid(value));
     set->SetEnum(number, field_type, value, NULL);
+  }
+  template <typename ExtendeeT>
+  static void Register(int number, FieldType type, bool is_packed) {
+    ExtensionSet::RegisterEnumExtension(&ExtendeeT::default_instance(), number,
+                                        type, false, is_packed, IsValid);
   }
 };
 
@@ -972,6 +1012,11 @@ class RepeatedEnumTypeTraits {
     return reinterpret_cast<const RepeatedField<Type>*>(
         RepeatedPrimitiveTypeTraits<int32>::GetDefaultRepeatedField());
   }
+  template <typename ExtendeeT>
+  static void Register(int number, FieldType type, bool is_packed) {
+    ExtensionSet::RegisterEnumExtension(&ExtendeeT::default_instance(), number,
+                                        type, true, is_packed, IsValid);
+  }
 };
 
 // -------------------------------------------------------------------
@@ -1016,6 +1061,12 @@ class MessageTypeTraits {
                                                ExtensionSet* set) {
     return static_cast<Type*>(set->UnsafeArenaReleaseMessage(
         number, Type::default_instance()));
+  }
+  template <typename ExtendeeT>
+  static void Register(int number, FieldType type, bool is_packed) {
+    ExtensionSet::RegisterMessageExtension(&ExtendeeT::default_instance(),
+                                           number, type, false, is_packed,
+                                           &Type::default_instance());
   }
 };
 
@@ -1062,6 +1113,12 @@ class RepeatedMessageTypeTraits {
   }
 
   static const RepeatedFieldType* GetDefaultRepeatedField();
+  template <typename ExtendeeT>
+  static void Register(int number, FieldType type, bool is_packed) {
+    ExtensionSet::RegisterMessageExtension(&ExtendeeT::default_instance(),
+                                           number, type, true, is_packed,
+                                           &Type::default_instance());
+  }
 };
 
 LIBPROTOBUF_EXPORT extern ProtobufOnceType repeated_message_generic_type_traits_once_init_;
@@ -1100,7 +1157,7 @@ template<typename Type> inline
 // parameter, and thus make an instance of ExtensionIdentifier have no
 // actual contents.  However, if we did that, then using at extension
 // identifier would not necessarily cause the compiler to output any sort
-// of reference to any simple defined in the extension's .pb.o file.  Some
+// of reference to any symbol defined in the extension's .pb.o file.  Some
 // linkers will actually drop object files that are not explicitly referenced,
 // but that would be bad because it would cause this extension to not be
 // registered at static initialization, and therefore using it would crash.
@@ -1113,10 +1170,16 @@ class ExtensionIdentifier {
   typedef ExtendeeType Extendee;
 
   ExtensionIdentifier(int number, typename TypeTraits::ConstType default_value)
-      : number_(number), default_value_(default_value) {}
+      : number_(number), default_value_(default_value) {
+    Register(number);
+  }
   inline int number() const { return number_; }
   typename TypeTraits::ConstType default_value() const {
     return default_value_;
+  }
+
+  static void Register(int number) {
+    TypeTraits::template Register<ExtendeeType>(number, field_type, is_packed);
   }
 
  private:

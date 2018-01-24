@@ -282,15 +282,19 @@ public final class MapEntry<K, V> extends AbstractMessage {
     private final Metadata<K, V> metadata;
     private K key;
     private Object value;
+    private boolean hasKey;
+    private boolean hasValue;
 
     private Builder(Metadata<K, V> metadata) {
-      this(metadata, metadata.defaultKey, toDefaultValue(metadata));
+      this(metadata, metadata.defaultKey, toDefaultValue(metadata), false, false);
     }
 
-    private Builder(Metadata<K, V> metadata, K key, Object value) {
+    private Builder(Metadata<K, V> metadata, K key, Object value, boolean hasKey, boolean hasValue) {
       this.metadata = metadata;
       this.key = key;
       this.value = value;
+      this.hasKey = hasKey;
+      this.hasValue = hasValue;
     }
  
     public boolean isNested() {
@@ -315,15 +319,18 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
     public Builder<K, V> setKey(K key) {
       this.key = key;
+      this.hasKey = true;
       return this;
     }
 
     public Builder<K, V> clearKey() {
       this.key = metadata.defaultKey;
+      this.hasKey = false;
       return this;
     }
 
     public Builder<K, V> setValue(Object value) {
+	  this.hasValue = true;
       if (!isNested()) {
         this.value = value;
         return this;
@@ -351,6 +358,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
     }
 
     public Builder<K, V> clearValue() {
+      this.hasValue = false;
       if (isNested()) {
         List<MapEntry> values = (List<MapEntry>) this.value;
         values.clear();
@@ -480,7 +488,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
     @Override
     public boolean hasField(FieldDescriptor field) {
       checkFieldDescriptor(field);
-      return true;
+      return field.getNumber() == 1 ? hasKey : hasValue;
     }
 
     @Override
