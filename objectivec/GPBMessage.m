@@ -32,6 +32,7 @@
 
 #import <objc/runtime.h>
 #import <objc/message.h>
+#import <stdatomic.h>
 
 #import "GPBArray_PackagePrivate.h"
 #import "GPBCodedInputStream_PackagePrivate.h"
@@ -742,14 +743,14 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
 void GPBPrepareReadOnlySemaphore(GPBMessage *self) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdirect-ivar-access"
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
   // Create the semaphore on demand (rather than init) as developers might not cause them
   // to be needed, and the heap usage can add up.  The atomic swap is used to avoid needing
   // another lock around creating it.
   if (self->readOnlySemaphore_ == nil) {
     dispatch_semaphore_t worker = dispatch_semaphore_create(1);
-    if (!OSAtomicCompareAndSwapPtrBarrier(NULL, worker, (void * volatile *)&(self->readOnlySemaphore_))) {
+    dispatch_semaphore_t expected = nil;
+    if (!atomic_compare_exchange_strong(&self->readOnlySemaphore_, &expected, worker)) {
       dispatch_release(worker);
     }
   }
@@ -969,7 +970,8 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
               newValue = [value copyWithZone:zone];
             }
           } else {
-            if (field.mapKeyDataType == GPBDataTypeString) {
+            if ((field.mapKeyDataType == GPBDataTypeString) &&
+                GPBFieldDataTypeIsObject(field)) {
               // NSDictionary
               newValue = [value mutableCopyWithZone:zone];
             } else {
@@ -2026,7 +2028,12 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       [newInput release];
     } else {
       GPBUnknownFieldSet *unknownFields = GetOrMakeUnknownFields(self);
-      [unknownFields mergeMessageSetMessage:typeId data:rawBytes];
+      // rawBytes was created via a NoCopy, so it can be reusing a
+      // subrange of another NSData that might go out of scope as things
+      // unwind, so a copy is needed to ensure what is saved in the
+      // unknown fields stays valid.
+      NSData *cloned = [NSData dataWithData:rawBytes];
+      [unknownFields mergeMessageSetMessage:typeId data:cloned];
     }
   }
 }
