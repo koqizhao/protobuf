@@ -41,11 +41,18 @@ import static com.google.protobuf.WireFormat.MAX_VARINT_SIZE;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
+
+import com.google.protobuf.dotnettype.DateTime;
+import com.google.protobuf.dotnettype.DateTimes;
+import com.google.protobuf.dotnettype.Decimal;
+import com.google.protobuf.dotnettype.Decimals;
 
 /**
  * Reads and decodes protocol message fields.
@@ -370,6 +377,18 @@ public abstract class CodedInputStream {
 
   /** Read a 64-bit little-endian integer from the stream. */
   public abstract long readRawLittleEndian64() throws IOException;
+
+  /** Read a dotnet DateTime from the stream. */
+  public Calendar readDateTime() throws IOException {
+    DateTime dateTime = readMessage(DateTime.parser(), ExtensionRegistryLite.getEmptyRegistry());
+    return DateTimes.toCalendar(dateTime);
+  }
+
+  /** Read a dotnet decimal from the stream. */
+  public BigDecimal readDecimal() throws IOException {
+    Decimal decimal = readMessage(Decimal.parser(), ExtensionRegistryLite.getEmptyRegistry());
+    return Decimals.bigDecimalValue(decimal);
+  }
 
   // -----------------------------------------------------------------
 

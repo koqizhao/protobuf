@@ -93,6 +93,8 @@ class Descriptor
             ->value("TYPE_SFIXED64", 16)
             ->value("TYPE_SINT32", 17)
             ->value("TYPE_SINT64", 18)
+            ->value("TYPE_DATETIME", 19)
+            ->value("TYPE_DECIMAL", 20)
             ->finalizeToPool();
 
         $pool->addEnum('google.protobuf.internal.FieldDescriptorProto.Label', \Google\Protobuf\Internal\Label::class)

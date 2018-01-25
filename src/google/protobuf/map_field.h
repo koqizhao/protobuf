@@ -444,6 +444,8 @@ class LIBPROTOBUF_EXPORT MapKey {
       case FieldDescriptor::CPPTYPE_FLOAT:
       case FieldDescriptor::CPPTYPE_ENUM:
       case FieldDescriptor::CPPTYPE_MESSAGE:
+      case FieldDescriptor::CPPTYPE_DATETIME:
+      case FieldDescriptor::CPPTYPE_DECIMAL:
         GOOGLE_LOG(FATAL) << "Unsupported";
         return false;
       case FieldDescriptor::CPPTYPE_STRING:
@@ -472,6 +474,8 @@ class LIBPROTOBUF_EXPORT MapKey {
       case FieldDescriptor::CPPTYPE_FLOAT:
       case FieldDescriptor::CPPTYPE_ENUM:
       case FieldDescriptor::CPPTYPE_MESSAGE:
+      case FieldDescriptor::CPPTYPE_DATETIME:
+      case FieldDescriptor::CPPTYPE_DECIMAL:
         GOOGLE_LOG(FATAL) << "Unsupported";
         break;
       case FieldDescriptor::CPPTYPE_STRING:
@@ -498,6 +502,8 @@ class LIBPROTOBUF_EXPORT MapKey {
       case FieldDescriptor::CPPTYPE_FLOAT:
       case FieldDescriptor::CPPTYPE_ENUM:
       case FieldDescriptor::CPPTYPE_MESSAGE:
+      case FieldDescriptor::CPPTYPE_DATETIME:
+      case FieldDescriptor::CPPTYPE_DECIMAL:
         GOOGLE_LOG(FATAL) << "Unsupported";
         break;
       case FieldDescriptor::CPPTYPE_STRING:
@@ -809,6 +815,8 @@ struct hash<google::protobuf::MapKey> {
       case google::protobuf::FieldDescriptor::CPPTYPE_FLOAT:
       case google::protobuf::FieldDescriptor::CPPTYPE_ENUM:
       case google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
+      case google::protobuf::FieldDescriptor::CPPTYPE_DATETIME:
+      case google::protobuf::FieldDescriptor::CPPTYPE_DECIMAL:
         GOOGLE_LOG(FATAL) << "Unsupported";
         break;
       case google::protobuf::FieldDescriptor::CPPTYPE_STRING:

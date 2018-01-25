@@ -235,9 +235,7 @@ public abstract class GeneratedMessageLite<
     unknownFields.makeImmutable();
   }
 
-  protected final <
-    MessageType extends GeneratedMessageLite<MessageType, BuilderType>,
-    BuilderType extends GeneratedMessageLite.Builder<MessageType, BuilderType>>
+  protected final <BuilderType extends GeneratedMessageLite.Builder>
         BuilderType createBuilder() {
     return (BuilderType) dynamicMethod(MethodToInvoke.NEW_BUILDER);
   }

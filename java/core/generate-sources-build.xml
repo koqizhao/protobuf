@@ -4,6 +4,7 @@
     <exec executable="${protoc}">
         <arg value="--java_out=${generated.sources.dir}"/>
         <arg value="--proto_path=${protobuf.source.dir}"/>
+        <arg value="--proto_path=${proto.dir}"/>
         <arg value="${protobuf.source.dir}/google/protobuf/any.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/api.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/descriptor.proto"/>
@@ -16,5 +17,6 @@
         <arg value="${protobuf.source.dir}/google/protobuf/type.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/wrappers.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/compiler/plugin.proto"/>
+        <arg value="${proto.dir}/dotnettype.proto"/>
     </exec>
 </project>

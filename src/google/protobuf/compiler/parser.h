@@ -116,6 +116,7 @@ class LIBPROTOBUF_EXPORT Parser {
 
  private:
   class LocationRecorder;
+  struct MapField;
 
   // =================================================================
   // Error recovery helpers
@@ -429,6 +430,10 @@ class LIBPROTOBUF_EXPORT Parser {
   // "type_name" (if it is not) with the type parsed.
   bool ParseType(FieldDescriptorProto::Type* type,
                  string* type_name);
+
+  // Parse a map and fill in "map_field"
+  bool ParseMap(MapField* map_field);
+
   // Parse a user-defined type and fill in "type_name" with the name.
   // If a primitive type is named, it is treated as an error.
   bool ParseUserDefinedType(string* type_name);
@@ -492,7 +497,16 @@ class LIBPROTOBUF_EXPORT Parser {
     string key_type_name;
     string value_type_name;
 
-    MapField() : is_map_field(false) {}
+    MapField* nested;
+
+    MapField() : is_map_field(false), nested(NULL) {
+
+    }
+
+    ~MapField() {
+      if (nested != NULL)
+        delete nested;
+    }
   };
   // Desugar the map syntax to generate a nested map entry message.
   void GenerateMapEntry(const MapField& map_field, FieldDescriptorProto* field,

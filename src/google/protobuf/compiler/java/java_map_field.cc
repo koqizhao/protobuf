@@ -36,12 +36,37 @@
 #include <google/protobuf/compiler/java/java_name_resolver.h>
 #include <google/protobuf/io/printer.h>
 
+#include <limits>
+
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace java {
 
 namespace {
+
+string Replace(string str, string src, string dest, int replace_count) {
+  string ret = str;
+
+  string::size_type pos = ret.find(src);
+  for (int i = 0; pos != string::npos && i < replace_count; i++) {
+  	ret = ret.replace(pos, src.length(), dest);
+    pos = ret.find(src);
+  }
+
+  return ret;
+}
+
+string Replace(string str, string src, string dest) {
+  return Replace(str, src, dest, std::numeric_limits<int>::max());
+}
+
+string Multiple(const string& str, int n) {
+  string ret;
+  for (int i = 0; i < n; i++)
+	ret += str;
+  return ret;
+}
 
 const FieldDescriptor* KeyField(const FieldDescriptor* descriptor) {
   GOOGLE_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
@@ -70,9 +95,13 @@ string TypeName(const FieldDescriptor* field,
   }
 }
 
-string WireType(const FieldDescriptor* field) {
+string WireType(FieldDescriptor::Type type) {
   return "com.google.protobuf.WireFormat.FieldType." +
-      string(FieldTypeName(field->type()));
+      string(FieldTypeName(type));
+}
+
+string WireType(const FieldDescriptor* field) {
+  return WireType(field->type());
 }
 
 void SetMessageVariables(const FieldDescriptor* descriptor,
@@ -152,6 +181,96 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
       ".internal_" + UniqueFileScopeIdentifier(descriptor->message_type()) +
       "_descriptor, ";
   (*variables)["ver"] = GeneratedCodeVersionSuffix();
+  (*variables)["map_entry_type_parameters"] = (*variables)["type_parameters"];
+  (*variables)["get_value_method"] = "getValue";
+}
+
+bool SetNestedMapVariables(const FieldDescriptor* descriptor,
+                           int messageBitIndex,
+                           int builderBitIndex,
+                           const FieldGeneratorInfo* info,
+                           Context* context,
+                           std::map<string, string>* variables) {
+  const Descriptor* message = descriptor->message_type();
+  const Descriptor* map_entry_nested_keys = message->FindNestedTypeByName("MapEntryNestedKeys");
+  if (map_entry_nested_keys == NULL) {
+    return false;
+  }
+
+  string key_boxed_type = (*variables)["boxed_key_type"];
+  string key_wire_type = (*variables)["key_wire_type"];
+  string key_default_value = (*variables)["key_default_value"];
+
+  string value_boxed_type = (*variables)["boxed_value_type"];
+  string value_wire_type = (*variables)["value_wire_type"];
+  string value_default_value = (*variables)["value_default_value"];
+
+  string value_map = "";
+  string map_entry_value_map = "";
+
+  string map_entry_new_default_instance_tpl = "com.google.protobuf.MapEntry.newDefaultInstance(\n"
+    "$indent$                        $key_wire_type$,\n"
+    "$indent$                        $key_default_value$,\n"
+    "$indent$                        $value_wire_type$,\n"
+    "$indent$                        $value_default_value$)";
+  string map_entry_new_default_instance = map_entry_new_default_instance_tpl;
+  map_entry_new_default_instance = Replace(map_entry_new_default_instance,
+    "$indent$", "");
+  map_entry_new_default_instance = Replace(map_entry_new_default_instance,
+    "$key_wire_type$", key_wire_type);
+  map_entry_new_default_instance = Replace(map_entry_new_default_instance,
+    "$key_default_value$", key_default_value);
+  map_entry_new_default_instance = Replace(map_entry_new_default_instance,
+    "$value_wire_type$", WireType(FieldDescriptor::Type::TYPE_MESSAGE));
+  map_entry_new_default_instance = Replace(map_entry_new_default_instance,
+    "$value_default_value$", map_entry_new_default_instance_tpl, 1);
+
+  ClassNameResolver* name_resolver = context->GetNameResolver();
+  int field_count = map_entry_nested_keys->field_count();
+  for (int i = 1; i <= field_count; i++) {
+    const FieldDescriptor* field = map_entry_nested_keys->FindFieldByNumber(i);
+    string boxed_type = TypeName(field, name_resolver, true);
+    string wire_type = WireType(field);
+    string default_value = DefaultValue(field, true, name_resolver);
+
+    value_map = value_map + "java.util.Map<" + boxed_type + ", ";
+    map_entry_value_map = map_entry_value_map + "com.google.protobuf.MapEntry<" + boxed_type + ", ";
+    map_entry_new_default_instance = Replace(map_entry_new_default_instance,
+      "$indent$", Multiple(" ", i * 8));
+    map_entry_new_default_instance = Replace(map_entry_new_default_instance,
+      "$key_wire_type$", wire_type);
+    map_entry_new_default_instance = Replace(map_entry_new_default_instance,
+      "$key_default_value$", default_value);
+    if (i != field_count) {
+      map_entry_new_default_instance = Replace(map_entry_new_default_instance,
+        "$value_wire_type$", WireType(FieldDescriptor::Type::TYPE_MESSAGE));
+      map_entry_new_default_instance = Replace(map_entry_new_default_instance,
+        "$value_default_value$", map_entry_new_default_instance_tpl, 1);
+    } else {
+      map_entry_new_default_instance = Replace(map_entry_new_default_instance,
+        "$value_wire_type$", value_wire_type);
+      map_entry_new_default_instance = Replace(map_entry_new_default_instance,
+        "$value_default_value$", value_default_value);
+    }
+  }
+
+  value_map = value_map + value_boxed_type;
+  map_entry_value_map = map_entry_value_map + value_boxed_type;
+  for (int i = 1; i <= field_count; i++) {
+    value_map = value_map + ">";
+    map_entry_value_map = map_entry_value_map + ">";
+  }
+
+  (*variables)["value_null_check"] = "if (value == null) { throw new java.lang.NullPointerException(); }";
+  (*variables)["value_wire_type"] = WireType(FieldDescriptor::Type::TYPE_MESSAGE);
+  (*variables)["value_type"] = value_map;
+  (*variables)["boxed_value_type"] = value_map;
+  (*variables)["type_parameters"] = key_boxed_type + ", " + value_map;
+  (*variables)["map_entry_type_parameters"] = key_boxed_type + ", " + map_entry_value_map;
+  (*variables)["get_value_method"] = "getMapValue";
+  (*variables)["map_entry_new_default_instance"] = map_entry_new_default_instance;
+
+  return true;
 }
 
 }  // namespace
@@ -163,6 +282,9 @@ ImmutableMapFieldGenerator(const FieldDescriptor* descriptor,
                                        Context* context)
   : descriptor_(descriptor), name_resolver_(context->GetNameResolver())  {
   SetMessageVariables(descriptor, messageBitIndex, builderBitIndex,
+                      context->GetFieldGeneratorInfo(descriptor),
+                      context, &variables_);
+  nested_ = SetNestedMapVariables(descriptor, messageBitIndex, builderBitIndex,
                       context->GetFieldGeneratorInfo(descriptor),
                       context, &variables_);
 }
@@ -288,19 +410,29 @@ GenerateInterfaceMembers(io::Printer* printer) const {
 
 void ImmutableMapFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
-  printer->Print(
-      variables_,
-      "private static final class $capitalized_name$DefaultEntryHolder {\n"
-      "  static final com.google.protobuf.MapEntry<\n"
-      "      $type_parameters$> defaultEntry =\n"
-      "          com.google.protobuf.MapEntry\n"
-      "          .<$type_parameters$>newDefaultInstance(\n"
-      "              $descriptor$\n"
-      "              $key_wire_type$,\n"
-      "              $key_default_value$,\n"
-      "              $value_wire_type$,\n"
-      "              $value_default_value$);\n"
-      "}\n");
+  if (nested_) {
+    printer->Print(
+        variables_,
+        "private static final class $capitalized_name$DefaultEntryHolder {\n"
+        "  static final com.google.protobuf.MapEntry<\n"
+        "      $map_entry_type_parameters$>\n"
+        "            defaultEntry = $map_entry_new_default_instance$;\n"
+        "}\n");
+  } else {
+    printer->Print(
+        variables_,
+        "private static final class $capitalized_name$DefaultEntryHolder {\n"
+        "  static final com.google.protobuf.MapEntry<\n"
+        "      $map_entry_type_parameters$> defaultEntry =\n"
+        "          com.google.protobuf.MapEntry\n"
+        "          .<$map_entry_type_parameters$>newDefaultInstance(\n"
+        "              $descriptor$\n"
+        "              $key_wire_type$,\n"
+        "              $key_default_value$,\n"
+        "              $value_wire_type$,\n"
+        "              $value_default_value$);\n"
+        "}\n");
+  }
   printer->Print(
       variables_,
       "private com.google.protobuf.MapField<\n"
@@ -715,7 +847,7 @@ GenerateParsingCode(io::Printer* printer) const {
     printer->Print(
         variables_,
         "com.google.protobuf.ByteString bytes = input.readBytes();\n"
-        "com.google.protobuf.MapEntry<$type_parameters$>\n"
+        "com.google.protobuf.MapEntry<$map_entry_type_parameters$>\n"
         "$name$__ = $default_entry$.getParserForType().parseFrom(bytes);\n");
     printer->Print(
         variables_,
@@ -728,11 +860,11 @@ GenerateParsingCode(io::Printer* printer) const {
   } else {
     printer->Print(
         variables_,
-        "com.google.protobuf.MapEntry<$type_parameters$>\n"
+        "com.google.protobuf.MapEntry<$map_entry_type_parameters$>\n"
         "$name$__ = input.readMessage(\n"
         "    $default_entry$.getParserForType(), extensionRegistry);\n"
         "$name$_.getMutableMap().put(\n"
-        "    $name$__.getKey(), $name$__.getValue());\n");
+        "    $name$__.getKey(), $name$__.$get_value_method$());\n");
   }
 }
 
@@ -759,7 +891,7 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
       variables_,
       "for (java.util.Map.Entry<$type_parameters$> entry\n"
       "     : internalGet$capitalized_name$().getMap().entrySet()) {\n"
-      "  com.google.protobuf.MapEntry<$type_parameters$>\n"
+      "  com.google.protobuf.MapEntry<$map_entry_type_parameters$>\n"
       "  $name$__ = $default_entry$.newBuilderForType()\n"
       "      .setKey(entry.getKey())\n"
       "      .setValue(entry.getValue())\n"

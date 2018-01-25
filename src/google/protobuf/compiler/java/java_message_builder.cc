@@ -686,15 +686,24 @@ void MessageBuilderGenerator::GenerateIsInitialized(
           break;
         case FieldDescriptor::LABEL_REPEATED:
           if (IsMapEntry(field->message_type())) {
-            printer->Print(
-              "for ($type$ item : get$name$Map().values()) {\n"
-              "  if (!item.isInitialized()) {\n"
-              "    return false;\n"
-              "  }\n"
-              "}\n",
-              "type", MapValueImmutableClassdName(field->message_type(),
-                                                  name_resolver_),
-              "name", info->capitalized_name);
+            bool isNested = field->message_type()->FindNestedTypeByName("MapEntryNestedKeys") != NULL;
+            if (isNested) {
+              printer->Print(
+                "if (!internalGet$name$().isInitialized()) {\n"
+                "  return false;\n"
+                "}\n",
+                "name", info->capitalized_name);
+            } else {
+              printer->Print(
+                "for ($type$ item : get$name$Map().values()) {\n"
+                "  if (!item.isInitialized()) {\n"
+                "    return false;\n"
+                "  }\n"
+                "}\n",
+                "type", MapValueImmutableClassdName(field->message_type(),
+                                                    name_resolver_),
+                "name", info->capitalized_name);
+            }
           } else {
             printer->Print(
               "for (int i = 0; i < get$name$Count(); i++) {\n"

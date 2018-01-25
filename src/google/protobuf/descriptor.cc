@@ -169,6 +169,8 @@ FieldDescriptor::kTypeToCppTypeMap[MAX_TYPE + 1] = {
   CPPTYPE_INT64,    // TYPE_SFIXED64
   CPPTYPE_INT32,    // TYPE_SINT32
   CPPTYPE_INT64,    // TYPE_SINT64
+  CPPTYPE_DATETIME, // TYPE_DATETIME
+  CPPTYPE_DECIMAL,  // TYPE_DECIMAL
 };
 
 const char * const FieldDescriptor::kTypeToName[MAX_TYPE + 1] = {
@@ -192,6 +194,8 @@ const char * const FieldDescriptor::kTypeToName[MAX_TYPE + 1] = {
   "sfixed64",  // TYPE_SFIXED64
   "sint32",    // TYPE_SINT32
   "sint64",    // TYPE_SINT64
+  "DateTime",  // TYPE_DATETIME
+  "Decimal",   // TYPE_DECIMAL
 };
 
 const char * const FieldDescriptor::kCppTypeToName[MAX_CPPTYPE + 1] = {
@@ -207,6 +211,8 @@ const char * const FieldDescriptor::kCppTypeToName[MAX_CPPTYPE + 1] = {
   "enum",      // CPPTYPE_ENUM
   "string",    // CPPTYPE_STRING
   "message",   // CPPTYPE_MESSAGE
+  "DateTime",  // CPPTYPE_DATETIME
+  "Decimal",   // CPPTYPE_DECIMAL
 };
 
 const char * const FieldDescriptor::kLabelToName[MAX_LABEL + 1] = {
@@ -6074,7 +6080,7 @@ bool DescriptorBuilder::ValidateMapEntry(FieldDescriptor* field,
       message->extension_count() != 0 ||
       field->label() != FieldDescriptor::LABEL_REPEATED ||
       message->extension_range_count() != 0 ||
-      message->nested_type_count() != 0 || message->enum_type_count() != 0 ||
+      message->enum_type_count() != 0 ||
       // Must contain exactly two fields
       message->field_count() != 2 ||
       // Field name and message name must match
@@ -6990,6 +6996,10 @@ void DescriptorBuilder::LogUnusedDependency(const FileDescriptorProto& proto,
       }
       // Log warnings for unused imported files.
       if (i == (*it)->extension_count()) {
+        if ((*it)->name() == "dotnettype.proto") {
+          continue;
+        }
+
         string error_message = "Import " + (*it)->name() + " but not used.";
         AddWarning((*it)->name(), proto, DescriptorPool::ErrorCollector::OTHER,
                    error_message);

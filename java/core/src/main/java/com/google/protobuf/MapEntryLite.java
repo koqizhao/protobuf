@@ -32,7 +32,11 @@ package com.google.protobuf;
 
 import java.io.IOException;
 import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+
+import com.google.protobuf.WireFormat.FieldType;
 
 /**
  * Implements the lite version of map entry messages.
@@ -43,6 +47,7 @@ import java.util.Map;
  *
  * Protobuf internal. Users shouldn't use.
  */
+@SuppressWarnings({ "unchecked" })
 public class MapEntryLite<K, V> {
 
   static class Metadata<K, V> {
@@ -50,15 +55,25 @@ public class MapEntryLite<K, V> {
     public final K defaultKey;
     public final WireFormat.FieldType valueType;
     public final V defaultValue;
+    public final boolean isNested;
 
     public Metadata(
         WireFormat.FieldType keyType, K defaultKey,
         WireFormat.FieldType valueType, V defaultValue) {
+      this(keyType, defaultKey, valueType, defaultValue, false);
+    }
+
+    public Metadata(
+        WireFormat.FieldType keyType, K defaultKey,
+        WireFormat.FieldType valueType, V defaultValue,
+        boolean isNested) {
       this.keyType = keyType;
       this.defaultKey = defaultKey;
       this.valueType = valueType;
       this.defaultValue = defaultValue;
+      this.isNested = isNested;
     }
+
   }
 
   private static final int KEY_FIELD_NUMBER = 1;
@@ -83,7 +98,7 @@ public class MapEntryLite<K, V> {
     this.key = key;
     this.value = value;
   }
-
+ 
   public K getKey() {
     return key;
   }
@@ -103,25 +118,35 @@ public class MapEntryLite<K, V> {
   public static <K, V> MapEntryLite<K, V> newDefaultInstance(
       WireFormat.FieldType keyType, K defaultKey,
       WireFormat.FieldType valueType, V defaultValue) {
-    return new MapEntryLite<K, V>(
-        keyType, defaultKey, valueType, defaultValue);
+    return new MapEntryLite<K, V>(keyType, defaultKey, valueType, defaultValue);
   }
 
-  static <K, V> void writeTo(CodedOutputStream output, Metadata<K, V> metadata, K key, V value)
+  static <K, V> void writeTo(CodedOutputStream output, Metadata<K, V> metadata, K key, Object value)
       throws IOException {
     FieldSet.writeElement(output, metadata.keyType, KEY_FIELD_NUMBER, key);
-    FieldSet.writeElement(output, metadata.valueType, VALUE_FIELD_NUMBER, value);
+    if (metadata.isNested) {
+      for (Object e : (List<?>)value) {
+        FieldSet.writeElement(output, metadata.valueType, VALUE_FIELD_NUMBER, e);
+      }
+    } else
+      FieldSet.writeElement(output, metadata.valueType, VALUE_FIELD_NUMBER, value);
   }
 
-  static <K, V> int computeSerializedSize(Metadata<K, V> metadata, K key, V value) {
-    return FieldSet.computeElementSize(metadata.keyType, KEY_FIELD_NUMBER, key)
-        + FieldSet.computeElementSize(metadata.valueType, VALUE_FIELD_NUMBER, value);
+  static <K, V> int computeSerializedSize(Metadata<K, V> metadata, K key, Object value) {
+    int serializedSize = FieldSet.computeElementSize(metadata.keyType, KEY_FIELD_NUMBER, key);
+    if (metadata.isNested) {
+      for (Object e : (List<?>)value) {
+        serializedSize += FieldSet.computeElementSize(metadata.valueType, VALUE_FIELD_NUMBER, e);
+      }
+    } else
+        serializedSize += FieldSet.computeElementSize(metadata.valueType, VALUE_FIELD_NUMBER, value);
+
+    return serializedSize;
   }
 
-  @SuppressWarnings("unchecked")
   static <T> T parseField(
       CodedInputStream input, ExtensionRegistryLite extensionRegistry,
-      WireFormat.FieldType type, T value) throws IOException {
+      FieldType type, T value) throws IOException {
     switch (type) {
       case MESSAGE:
         MessageLite.Builder subBuilder = ((MessageLite) value).toBuilder();
@@ -165,30 +190,40 @@ public class MapEntryLite<K, V> {
    */
   public Map.Entry<K, V> parseEntry(ByteString bytes, ExtensionRegistryLite extensionRegistry)
       throws IOException {
-    return parseEntry(bytes.newCodedInput(), metadata, extensionRegistry);
+    return (Map.Entry<K, V>)parseEntry(bytes.newCodedInput(), metadata, extensionRegistry);
   }
 
-  static <K, V> Map.Entry<K, V> parseEntry(
+  static <K, V> Map.Entry<K, Object> parseEntry(
       CodedInputStream input, Metadata<K, V> metadata, ExtensionRegistryLite extensionRegistry)
           throws IOException{
     K key = metadata.defaultKey;
     V value = metadata.defaultValue;
+    List<V> values = null;
+    int keyTag = WireFormat.makeTag(KEY_FIELD_NUMBER, metadata.keyType.getWireType());
+    int valueTag = WireFormat.makeTag(VALUE_FIELD_NUMBER, metadata.valueType.getWireType());
     while (true) {
       int tag = input.readTag();
       if (tag == 0) {
         break;
       }
-      if (tag == WireFormat.makeTag(KEY_FIELD_NUMBER, metadata.keyType.getWireType())) {
-        key = parseField(input, extensionRegistry, metadata.keyType, key);
-      } else if (tag == WireFormat.makeTag(VALUE_FIELD_NUMBER, metadata.valueType.getWireType())) {
-        value = parseField(input, extensionRegistry, metadata.valueType, value);
+      if (tag == keyTag) {
+        key = parseField(input, extensionRegistry, metadata.keyType, metadata.defaultKey);
+      } else if (tag == valueTag) {
+        if (metadata.isNested) {
+          value = parseField(input, extensionRegistry, metadata.valueType, metadata.defaultValue);
+          if (values == null)
+            values = new ArrayList<V>();
+          values.add(value);
+        } else {
+          value = parseField(input, extensionRegistry, metadata.valueType, metadata.defaultValue);
+        }
       } else {
         if (!input.skipField(tag)) {
           break;
         }
       }
     }
-    return new AbstractMap.SimpleImmutableEntry<K, V>(key, value);
+    return new AbstractMap.SimpleImmutableEntry<K, Object>(key, metadata.isNested ? values : value);
   }
 
   /**
@@ -202,16 +237,17 @@ public class MapEntryLite<K, V> {
     final int oldLimit = input.pushLimit(length);
     K key = metadata.defaultKey;
     V value = metadata.defaultValue;
-
+    int keyTag = WireFormat.makeTag(KEY_FIELD_NUMBER, metadata.keyType.getWireType());
+    int valueTag = WireFormat.makeTag(VALUE_FIELD_NUMBER, metadata.valueType.getWireType());
     while (true) {
       int tag = input.readTag();
       if (tag == 0) {
         break;
       }
-      if (tag == WireFormat.makeTag(KEY_FIELD_NUMBER, metadata.keyType.getWireType())) {
-        key = parseField(input, extensionRegistry, metadata.keyType, key);
-      } else if (tag == WireFormat.makeTag(VALUE_FIELD_NUMBER, metadata.valueType.getWireType())) {
-        value = parseField(input, extensionRegistry, metadata.valueType, value);
+      if (tag == keyTag) {
+        key = parseField(input, extensionRegistry, metadata.keyType, metadata.defaultKey);
+      } else if (tag == valueTag) {
+        value = parseField(input, extensionRegistry, metadata.valueType, metadata.defaultValue);
       } else {
         if (!input.skipField(tag)) {
           break;

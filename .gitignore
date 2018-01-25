@@ -90,6 +90,20 @@ javanano/target
 java/.idea
 java/**/*.iml
 
+*.versionsBackup
+*.log
+# misc
+*.un~
+
+# eclipse project files
+RemoteSystemsTempFiles
+.classpath
+.settings
+.project
+.metadata
+.recommenders
+bin/
+
 # Windows native output.
 cmake/build
 build_msvc

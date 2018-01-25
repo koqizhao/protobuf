@@ -36,11 +36,17 @@ import static com.google.protobuf.WireFormat.MAX_VARINT_SIZE;
 import static java.lang.Math.max;
 
 import com.google.protobuf.Utf8.UnpairedSurrogateException;
+import com.google.protobuf.dotnettype.DateTime;
+import com.google.protobuf.dotnettype.DateTimes;
+import com.google.protobuf.dotnettype.Decimal;
+import com.google.protobuf.dotnettype.Decimals;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -393,6 +399,18 @@ public abstract class CodedOutputStream extends ByteOutput {
   public abstract void writeRawMessageSetExtension(final int fieldNumber, final ByteString value)
       throws IOException;
 
+  /** Write a dotnet DateTime field to the stream. */
+  public void writeDateTime(final int fieldNumber, final Calendar value) throws IOException {
+    DateTime dateTime = DateTimes.valueOf(value);
+    writeMessage(fieldNumber, dateTime);
+  }
+
+  /** Write a dotnet Decimal field to the stream. */
+  public void writeDecimal(final int fieldNumber, final BigDecimal value) throws IOException {
+    Decimal decimal = Decimals.valueOf(value);
+    writeMessage(fieldNumber, decimal);
+  }
+
   // -----------------------------------------------------------------
 
   /** Write an {@code int32} field to the stream. */
@@ -480,6 +498,18 @@ public abstract class CodedOutputStream extends ByteOutput {
   /** Write an embedded message field to the stream. */
   // Abstract to avoid overhead of additional virtual method calls.
   public abstract void writeMessageNoTag(final MessageLite value) throws IOException;
+
+  /** Write a dotnet DateTime field to the stream. */
+  public void writeDateTimeNoTag(final Calendar value) throws IOException {
+    DateTime dateTime = DateTimes.valueOf(value);
+    writeMessageNoTag(dateTime);
+  }
+
+  /** Write a dotnet Decimal field to the stream. */
+  public void writeDecimalNoTag(final BigDecimal value) throws IOException {
+    Decimal decimal = Decimals.valueOf(value);
+    writeMessageNoTag(decimal);
+  }
 
   //=================================================================
 
@@ -701,6 +731,26 @@ public abstract class CodedOutputStream extends ByteOutput {
         + computeLazyFieldSize(WireFormat.MESSAGE_SET_MESSAGE, value);
   }
 
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * embedded dotnet DateTime field, including tag.
+   */
+  public static int computeDateTimeSize(
+      final int fieldNumber, final Calendar value) {
+    DateTime dateTime = DateTimes.valueOf(value);
+    return computeMessageSize(fieldNumber, dateTime);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * embedded dotnet Decimal field, including tag.
+   */
+  public static int computeDecimalSize(
+      final int fieldNumber, final BigDecimal value) {
+    Decimal decimal = Decimals.valueOf(value);
+    return computeMessageSize(fieldNumber, decimal);
+  }
+
   // -----------------------------------------------------------------
 
   /** Compute the number of bytes that would be needed to encode a tag. */
@@ -915,6 +965,24 @@ public abstract class CodedOutputStream extends ByteOutput {
 
   static int computeLengthDelimitedFieldSize(int fieldLength) {
     return computeUInt32SizeNoTag(fieldLength) + fieldLength;
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * embedded dotnet DateTime field.
+   */
+  public static int computeDateTimeSizeNoTag(final Calendar value) {
+    DateTime dateTime = DateTimes.valueOf(value);
+    return computeMessageSizeNoTag(dateTime);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * embedded dotnet Decimal field.
+   */
+  public static int computeDecimalSizeNoTag(final BigDecimal value) {
+    Decimal decimal = Decimals.valueOf(value);
+    return computeMessageSizeNoTag(decimal);
   }
 
   /**

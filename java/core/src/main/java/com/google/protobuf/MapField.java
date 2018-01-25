@@ -56,6 +56,7 @@ import java.util.Set;
  * and getList() concurrently in multiple threads. If write-access is needed,
  * all access must be synchronized.
  */
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class MapField<K, V> implements MutabilityOracle {
   /**
    * Indicates where the data of this map field is currently stored.
@@ -91,8 +92,9 @@ public class MapField<K, V> implements MutabilityOracle {
   }
 
   private static class ImmutableMessageConverter<K, V> implements Converter<K, V> {
-    private final MapEntry<K, V> defaultEntry;
-    public ImmutableMessageConverter(MapEntry<K, V> defaultEntry) {
+    private final MapEntry<K, Object> defaultEntry;
+
+    public ImmutableMessageConverter(MapEntry defaultEntry) {
       this.defaultEntry = defaultEntry;
     }
 
@@ -104,8 +106,8 @@ public class MapField<K, V> implements MutabilityOracle {
     @Override
     @SuppressWarnings("unchecked")
     public void convertMessageToKeyAndValue(Message message, Map<K, V> map) {
-      MapEntry<K, V> entry = (MapEntry<K, V>) message;
-      map.put(entry.getKey(), entry.getValue());
+      MapEntry<K, Object> entry = (MapEntry) message;
+      map.put((K) entry.getKey(), (V) entry.getRealValue());
     }
 
     @Override
@@ -129,7 +131,7 @@ public class MapField<K, V> implements MutabilityOracle {
   }
 
   private MapField(
-      MapEntry<K, V> defaultEntry,
+      MapEntry defaultEntry,
       StorageMode mode,
       Map<K, V> mapData) {
     this(new ImmutableMessageConverter<K, V>(defaultEntry), mode, mapData);
@@ -138,24 +140,53 @@ public class MapField<K, V> implements MutabilityOracle {
 
   /** Returns an immutable empty MapField. */
   public static <K, V> MapField<K, V> emptyMapField(
-      MapEntry<K, V> defaultEntry) {
+      MapEntry defaultEntry) {
     return new MapField<K, V>(
         defaultEntry, StorageMode.MAP, Collections.<K, V>emptyMap());
   }
 
 
   /** Creates a new mutable empty MapField. */
-  public static <K, V> MapField<K, V> newMapField(MapEntry<K, V> defaultEntry) {
+  public static <K, V> MapField<K, V> newMapField(MapEntry defaultEntry) {
     return new MapField<K, V>(
         defaultEntry, StorageMode.MAP, new LinkedHashMap<K, V>());
   }
 
+  private static boolean isInitialized(Map map) {
+    if (map == null || map.isEmpty())
+      return true;
+
+    Boolean isMap = null;
+    Boolean isMessage = null;
+    for (Object value : map.values()) {
+      if (isMap == null)
+        isMap = value != null && value instanceof Map;
+      
+      if (isMap) {
+        if (!isInitialized((Map) value))
+          return false;
+
+        continue;
+      }
+
+      if (isMessage == null)
+        isMessage = value != null && value instanceof MessageLite;
+
+      if (!isMessage)
+        return true;
+
+      MessageLite message = (MessageLite) value;
+      if (!message.isInitialized())
+        return false;
+    }
+
+    return true;
+  }
 
   private Message convertKeyAndValueToMessage(K key, V value) {
     return converter.convertKeyAndValueToMessage(key, value);
   }
 
-  @SuppressWarnings("unchecked")
   private void convertMessageToKeyAndValue(Message message, Map<K, V> map) {
     converter.convertMessageToKeyAndValue(message, map);
   }
@@ -212,7 +243,6 @@ public class MapField<K, V> implements MutabilityOracle {
     mode = StorageMode.MAP;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public boolean equals(Object object) {
     if (!(object instanceof MapField)) {
@@ -225,6 +255,10 @@ public class MapField<K, V> implements MutabilityOracle {
   @Override
   public int hashCode() {
     return MapFieldLite.<K, V>calculateHashCodeForMap(getMap());
+  }
+
+  public boolean isInitialized() {
+    return isInitialized(getMap());
   }
 
   /** Returns a deep copy of this MapField. */

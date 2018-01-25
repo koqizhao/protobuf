@@ -1031,7 +1031,7 @@ public final class Descriptors {
      * the same class that would returned by Message.getField(this).
      */
     public Object getDefaultValue() {
-      if (getJavaType() == JavaType.MESSAGE) {
+      if (getJavaType().isMessageType()) {
         throw new UnsupportedOperationException(
           "FieldDescriptor.getDefaultValue() called on an embedded message " +
           "field.");
@@ -1162,7 +1162,9 @@ public final class Descriptors {
       SFIXED32(JavaType.INT        ),
       SFIXED64(JavaType.LONG       ),
       SINT32  (JavaType.INT        ),
-      SINT64  (JavaType.LONG       );
+      SINT64  (JavaType.LONG       ),
+      DATETIME(JavaType.DATETIME   ),
+      DECIMAL (JavaType.DECIMAL    );
 
       Type(final JavaType javaType) {
         this.javaType = javaType;
@@ -1198,7 +1200,9 @@ public final class Descriptors {
       STRING(""),
       BYTE_STRING(ByteString.EMPTY),
       ENUM(null),
-      MESSAGE(null);
+      MESSAGE(null),
+      DATETIME(null),
+      DECIMAL(null);
 
       JavaType(final Object defaultDefault) {
         this.defaultDefault = defaultDefault;
@@ -1209,6 +1213,10 @@ public final class Descriptors {
        * type.  This is meant for use inside this file only, hence is private.
        */
       private final Object defaultDefault;
+
+      public boolean isMessageType() {
+        return this == MESSAGE || this == DATETIME || this == DECIMAL;
+      }
     }
 
     // This method should match exactly with the ToJsonName() function in C++
@@ -1445,6 +1453,8 @@ public final class Descriptors {
               break;
             case MESSAGE:
             case GROUP:
+            case DATETIME:
+            case DECIMAL:
               throw new DescriptorValidationException(this,
                 "Message type had default value.");
           }
@@ -1465,6 +1475,8 @@ public final class Descriptors {
               defaultValue = enumType.getValues().get(0);
               break;
             case MESSAGE:
+            case DATETIME:
+            case DECIMAL:
               defaultValue = null;
               break;
             default:

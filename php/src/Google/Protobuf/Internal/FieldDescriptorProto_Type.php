@@ -103,5 +103,13 @@ class FieldDescriptorProto_Type
      * Generated from protobuf enum <code>TYPE_SINT64 = 18;</code>
      */
     const TYPE_SINT64 = 18;
+    /**
+     * Generated from protobuf enum <code>TYPE_DATETIME = 19;</code>
+     */
+    const TYPE_DATETIME = 19;
+    /**
+     * Generated from protobuf enum <code>TYPE_DECIMAL = 20;</code>
+     */
+    const TYPE_DECIMAL = 20;
 }
 

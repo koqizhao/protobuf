@@ -91,7 +91,9 @@ public final class WireFormat {
     STRING(""),
     BYTE_STRING(ByteString.EMPTY),
     ENUM(null),
-    MESSAGE(null);
+    MESSAGE(null),
+    DATETIME(null),
+    DECIMAL(null);
 
     JavaType(final Object defaultDefault) {
       this.defaultDefault = defaultDefault;
@@ -146,7 +148,9 @@ public final class WireFormat {
     SFIXED32(JavaType.INT        , WIRETYPE_FIXED32         ),
     SFIXED64(JavaType.LONG       , WIRETYPE_FIXED64         ),
     SINT32  (JavaType.INT        , WIRETYPE_VARINT          ),
-    SINT64  (JavaType.LONG       , WIRETYPE_VARINT          );
+    SINT64  (JavaType.LONG       , WIRETYPE_VARINT          ),
+    DATETIME(JavaType.DATETIME   , WIRETYPE_LENGTH_DELIMITED),
+    DECIMAL (JavaType.DECIMAL    , WIRETYPE_LENGTH_DELIMITED);
 
     FieldType(final JavaType javaType, final int wireType) {
       this.javaType = javaType;

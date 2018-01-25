@@ -5744,7 +5744,7 @@ TEST_F(ValidationErrorTest, MapEntryNestedType) {
       "  name: 'Bar' "
       "} ",
       file_proto.mutable_message_type(0)->mutable_nested_type(0));
-  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+  BuildFile(file_proto.DebugString());
 }
 
 TEST_F(ValidationErrorTest, MapEntryEnumTypes) {

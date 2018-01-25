@@ -69,6 +69,7 @@ class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
   const FieldDescriptor* descriptor_;
   std::map<string, string> variables_;
   ClassNameResolver* name_resolver_;
+  bool nested_;
   void GenerateMapGetters(io::Printer* printer) const;
 };
 
