@@ -58,7 +58,7 @@ string Replace(string str, string src, string dest, int replace_count) {
 }
 
 string Replace(string str, string src, string dest) {
-  return Replace(str, src, dest, numeric_limits<int>::max());
+  return Replace(str, src, dest, std::numeric_limits<int>::max());
 }
 
 string Multiple(const string& str, int n) {
@@ -190,7 +190,7 @@ bool SetNestedMapVariables(const FieldDescriptor* descriptor,
                            int builderBitIndex,
                            const FieldGeneratorInfo* info,
                            Context* context,
-                           map<string, string>* variables) {
+                           std::map<string, string>* variables) {
   const Descriptor* message = descriptor->message_type();
   const Descriptor* map_entry_nested_keys = message->FindNestedTypeByName("MapEntryNestedKeys");
   if (map_entry_nested_keys == NULL) {

@@ -1014,7 +1014,7 @@ void Parser::GenerateMapEntry(const MapField& map_field,
     MapField* temp = map_field.nested;
     for (int i = 1; temp != NULL; i++) {
       FieldDescriptorProto* nested_field = nested->add_field();
-      nested_field->set_name("key" + to_string(i));
+      nested_field->set_name("key" + std::to_string(i));
       nested_field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
       nested_field->set_number(i);
       if (temp->key_type_name.empty()) {

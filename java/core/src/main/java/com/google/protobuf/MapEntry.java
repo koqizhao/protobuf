@@ -66,7 +66,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
     public final Descriptor descriptor;
     public final Parser<MapEntry<K, V>> parser;
-    
+
     public Metadata(
         Descriptor descriptor,
         WireFormat.FieldType keyType,
@@ -162,7 +162,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
   public V getValue() {
     return (V) value;
   }
-  
+
   public Map getMapValue() {
     return toMapValue(value);
   }
@@ -206,7 +206,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
   @Override
   public Builder<K, V> toBuilder() {
-    return new Builder<K, V>(metadata, key, copyValue(metadata, value));
+    return new Builder<K, V>(metadata, key, copyValue(metadata, value), true, true);
   }
 
   @Override
@@ -268,7 +268,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
     List values = (List) value;
     return values.get(index);
   }
-  
+
   @Override
   public UnknownFieldSet getUnknownFields() {
     return UnknownFieldSet.getDefaultInstance();
@@ -296,7 +296,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
       this.hasKey = hasKey;
       this.hasValue = hasValue;
     }
- 
+
     public boolean isNested() {
       return metadata.isNested;
     }
@@ -513,7 +513,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
       List values = (List) value;
       return values.get(index);
     }
-  
+
     @Override
     public UnknownFieldSet getUnknownFields() {
       return UnknownFieldSet.getDefaultInstance();
@@ -521,7 +521,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
     @Override
     public Builder<K, V> clone() {
-      return new Builder<K, V>(metadata, key, copyValue(metadata, value));
+      return new Builder<K, V>(metadata, key, copyValue(metadata, value), hasKey, hasValue);
     }
   }
 

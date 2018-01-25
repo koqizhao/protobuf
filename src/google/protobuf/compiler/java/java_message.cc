@@ -960,7 +960,7 @@ void ImmutableMessageGenerator::GenerateIsInitialized(
             bool isNested = field->message_type()->FindNestedTypeByName("MapEntryNestedKeys") != NULL;
             if (isNested) {
               printer->Print(
-                "if (!internalGet$name$Map().isInitialized()) {\n"
+                "if (!internalGet$name$().isInitialized()) {\n"
                 "  return false;\n"
                 "}\n",
                 "name", info->capitalized_name);

@@ -50,6 +50,9 @@ import java.util.Map;
  */
 public interface Message extends MessageLite, MessageOrBuilder {
 
+  @Override
+  Message getDefaultInstanceForType();
+
   // (From MessageLite, re-declared here only for return type covariance.)
   @Override
   Parser<? extends Message> getParserForType();
@@ -108,6 +111,9 @@ public interface Message extends MessageLite, MessageOrBuilder {
    * Abstract interface implemented by Protocol Message builders.
    */
   interface Builder extends MessageLite.Builder, MessageOrBuilder {
+    @Override
+    Message getDefaultInstanceForType();
+
     // (From MessageLite.Builder, re-declared here only for return type
     // covariance.)
     @Override

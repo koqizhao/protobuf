@@ -264,11 +264,13 @@ enum FieldDescriptorProto_Type {
   FieldDescriptorProto_Type_TYPE_SFIXED32 = 15,
   FieldDescriptorProto_Type_TYPE_SFIXED64 = 16,
   FieldDescriptorProto_Type_TYPE_SINT32 = 17,
-  FieldDescriptorProto_Type_TYPE_SINT64 = 18
+  FieldDescriptorProto_Type_TYPE_SINT64 = 18,
+  FieldDescriptorProto_Type_TYPE_DATETIME = 19,
+  FieldDescriptorProto_Type_TYPE_DECIMAL = 20
 };
 LIBPROTOBUF_EXPORT bool FieldDescriptorProto_Type_IsValid(int value);
 const FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MIN = FieldDescriptorProto_Type_TYPE_DOUBLE;
-const FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MAX = FieldDescriptorProto_Type_TYPE_SINT64;
+const FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MAX = FieldDescriptorProto_Type_TYPE_DECIMAL;
 const int FieldDescriptorProto_Type_Type_ARRAYSIZE = FieldDescriptorProto_Type_Type_MAX + 1;
 
 LIBPROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* FieldDescriptorProto_Type_descriptor();
@@ -1692,6 +1694,10 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
     FieldDescriptorProto_Type_TYPE_SINT32;
   static const Type TYPE_SINT64 =
     FieldDescriptorProto_Type_TYPE_SINT64;
+  static const Type TYPE_DATETIME =
+    FieldDescriptorProto_Type_TYPE_DATETIME;
+  static const Type TYPE_DECIMAL =
+    FieldDescriptorProto_Type_TYPE_DECIMAL;
   static inline bool Type_IsValid(int value) {
     return FieldDescriptorProto_Type_IsValid(value);
   }

@@ -65,7 +65,7 @@ class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
 
   string GetBoxedType() const;
 
-private:
+ private:
   const FieldDescriptor* descriptor_;
   std::map<string, string> variables_;
   ClassNameResolver* name_resolver_;

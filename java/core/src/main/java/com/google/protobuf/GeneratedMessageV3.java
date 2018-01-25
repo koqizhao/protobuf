@@ -2731,12 +2731,12 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     }
   }
 
-  protected static <V> void serializeIntegerMapTo(
+  protected static void serializeIntegerMapTo(
       CodedOutputStream out,
-      MapField<Integer, V> field,
-      MapEntry<Integer, V> defaultEntry,
+      MapField<Integer, ?> field,
+      MapEntry<Integer, ?> defaultEntry,
       int fieldNumber) throws IOException {
-    Map<Integer, V> m = field.getMap();
+    Map<Integer, ?> m = field.getMap();
     if (!out.isSerializationDeterministic()) {
       serializeMapTo(out, m, defaultEntry, fieldNumber);
       return;
@@ -2758,13 +2758,13 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     }
   }
 
-  protected static <V> void serializeLongMapTo(
+  protected static void serializeLongMapTo(
       CodedOutputStream out,
-      MapField<Long, V> field,
-      MapEntry<Long, V> defaultEntry,
+      MapField<Long, ?> field,
+      MapEntry<Long, ?> defaultEntry,
       int fieldNumber)
       throws IOException {
-    Map<Long, V> m = field.getMap();
+    Map<Long, ?> m = field.getMap();
     if (!out.isSerializationDeterministic()) {
       serializeMapTo(out, m, defaultEntry, fieldNumber);
       return;
@@ -2785,13 +2785,13 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     }
   }
 
-  protected static <V> void serializeStringMapTo(
+  protected static void serializeStringMapTo(
       CodedOutputStream out,
-      MapField<String, V> field,
-      MapEntry<String, V> defaultEntry,
+      MapField<String, ?> field,
+      MapEntry<String, ?> defaultEntry,
       int fieldNumber)
       throws IOException {
-    Map<String, V> m = field.getMap();
+    Map<String, ?> m = field.getMap();
     if (!out.isSerializationDeterministic()) {
       serializeMapTo(out, m, defaultEntry, fieldNumber);
       return;
@@ -2811,13 +2811,13 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     }
   }
 
-  protected static <V> void serializeBooleanMapTo(
+  protected static void serializeBooleanMapTo(
       CodedOutputStream out,
-      MapField<Boolean, V> field,
-      MapEntry<Boolean, V> defaultEntry,
+      MapField<Boolean, ?> field,
+      MapEntry<Boolean, ?> defaultEntry,
       int fieldNumber)
       throws IOException {
-    Map<Boolean, V> m = field.getMap();
+    Map<Boolean, ?> m = field.getMap();
     if (!out.isSerializationDeterministic()) {
       serializeMapTo(out, m, defaultEntry, fieldNumber);
       return;
@@ -2826,10 +2826,10 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     maybeSerializeBooleanEntryTo(out, m, defaultEntry, fieldNumber, true);
   }
 
-  private static <V> void maybeSerializeBooleanEntryTo(
+  private static void maybeSerializeBooleanEntryTo(
       CodedOutputStream out,
-      Map<Boolean, V> m,
-      MapEntry<Boolean, V> defaultEntry,
+      Map<Boolean, ?> m,
+      MapEntry<Boolean, ?> defaultEntry,
       int fieldNumber,
       boolean key)
       throws IOException {
@@ -2843,13 +2843,13 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
   }
 
   /** Serialize the map using the iteration order. */
-  private static <K, V> void serializeMapTo(
+  private static <K> void serializeMapTo(
       CodedOutputStream out,
-      Map<K, V> m,
-      MapEntry<K, V> defaultEntry,
+      Map<K, ?> m,
+      MapEntry<K, ?> defaultEntry,
       int fieldNumber)
       throws IOException {
-    for (Map.Entry<K, V> entry : m.entrySet()) {
+    for (Map.Entry<K, ?> entry : m.entrySet()) {
       out.writeMessage(fieldNumber,
           defaultEntry.newBuilderForType()
               .setKey(entry.getKey())
