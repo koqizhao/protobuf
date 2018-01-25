@@ -217,7 +217,8 @@ public class NestedMapFieldTest {
     mapValue.put(1, nestedMapValue);
 
     NestedMapDemo expected = NestedMapDemo.newBuilder().setUrl("http://www.ctrip.com").setTitle("test")
-        .addSnippets("t1").addSnippets("t2").putAllMetadata(mapValue).build();
+        .addSnippets("t1").addSnippets("t2").putAllMetadata(mapValue).addIntValues(1).addIntValues(3).addIntValues(5)
+        .build();
 
     InputStream is = null;
     NestedMapDemo demo;

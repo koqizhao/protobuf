@@ -11,4 +11,5 @@ message NestedMapDemo {
     optional string title = 2;
     repeated string snippets = 3;
     map<int32, map<string, string>> metadata = 4;
+    repeated int32 intValues = 5;
 }
