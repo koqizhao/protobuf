@@ -130,8 +130,8 @@ public class Decimals {
         unscaledFirst = 1;
       }
 
-      if (scale > 28) {
-        throw new IllegalArgumentException("BigDecimal scale exceeds Decimal limit of 28");
+      if (scale > 28 || scale < 0) {
+        throw new IllegalArgumentException("BigDecimal scale exceeds Decimal limit of [0, 28]");
       }
       result[1] = (byte) scale;
 
