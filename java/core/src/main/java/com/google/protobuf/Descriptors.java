@@ -1032,6 +1032,9 @@ public final class Descriptors {
      */
     public Object getDefaultValue() {
       if (getJavaType().isMessageType()) {
+    	if (getJavaType().isPrimitiveMessageType())
+          return null;
+
         throw new UnsupportedOperationException(
           "FieldDescriptor.getDefaultValue() called on an embedded message " +
           "field.");
@@ -1215,7 +1218,11 @@ public final class Descriptors {
       private final Object defaultDefault;
 
       public boolean isMessageType() {
-        return this == MESSAGE || this == DATETIME || this == DECIMAL;
+        return this == MESSAGE || this.isPrimitiveMessageType();
+      }
+
+      public boolean isPrimitiveMessageType() {
+        return this == DATETIME || this == DECIMAL;
       }
     }
 
